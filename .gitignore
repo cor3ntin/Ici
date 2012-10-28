@@ -1,0 +1,8 @@
+*.o
+icigrammar.cpp
+icigrammar_p.h
+ici-lex.inc
+iciparser.cpp
+iciparser.h
+ici.pro.user
+Makefile

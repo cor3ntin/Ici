@@ -32,6 +32,7 @@ public:
 class ICISettingsPrivate{
 public:
     ICISettingsPrivate();
+    ~ICISettingsPrivate();
     void parse(const  QByteArray & data);
 
     bool error;

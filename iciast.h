@@ -59,10 +59,19 @@ struct Node
     inline Node()
         :line(0), pos(0){
     }
-    virtual ~Node(){}
+
+    virtual ~Node(){
+    }
 
     int  line,pos;
     Type type;
+};
+
+struct StatementNode : public Node {
+    StatementNode(){
+        type = Type_Statement;
+    }
+    virtual ~StatementNode(){}
 };
 
 struct StatementListNode : public Node {
@@ -78,21 +87,17 @@ struct StatementListNode : public Node {
            next = previous->next;
            previous->next = this;
     }
-    virtual ~StatementListNode(){}
+
+    virtual ~StatementListNode(){
+        delete node;
+        delete next;
+    }
 
     StatementNode  *node;
     StatementListNode *next;
 };
 
-struct StatementNode : public Node {
-    StatementNode(){
-        type = Type_Statement;
-    }
-    virtual ~StatementNode(){}
-};
-
 struct ExpressionNode : public Node {
-
 };
 
 struct OperatorNode : public Node {
@@ -112,26 +117,34 @@ struct IdentifierNode : public ExpressionNode {
         this->name = previous->name;
         previous->name.clear();
     }
+
     IdentifierNode(IdentifierNode* previous, const QString & name){
         type = Type_Identifier;
         this->name = name;
         this->next = previous->next;
         previous->next = this;
     }
+
     IdentifierNode(const QString & name){
         type = Type_Identifier;
         this->name = name;
         this->next = this;
     }
+
     QStringList keys() const {
         QStringList k;
         keys(k);
         return k;
     }
+
     void keys(QStringList & k) const {
         k << name;
         if(next && next !=this)
             next->keys(k);
+    }
+
+    virtual ~IdentifierNode(){
+        delete next;
     }
 
     IdentifierNode* next;
@@ -143,6 +156,12 @@ struct AssignementNode : public StatementNode {
         :id(id), op(op), value(value){
         type = Type_Assignement;
     }
+
+    virtual ~AssignementNode(){
+        delete op;
+        delete value;
+    }
+
     IdentifierNode* id;
     OperatorNode* op;
     ExpressionNode* value;
@@ -187,10 +206,16 @@ struct ListElementNode : public Node {
         this->value = value;
         type = Type_List;
     }
+
     ListElementNode(ExpressionNode* value){
         this->next  = this;
         this->value = value;
         type = Type_List;
+    }
+
+    virtual ~ListElementNode(){
+        delete next;
+        delete value;
     }
 
     ListElementNode* next;
@@ -201,6 +226,11 @@ struct ListNode : public ExpressionNode {
         nodes = node;
         type = Type_List;
     }
+
+    virtual ~ListNode(){
+        delete nodes;
+    }
+
     ListElementNode* nodes;
 };
 
@@ -209,6 +239,11 @@ struct FunctionCallNode : public ExpressionNode {
         :name(name), parameters(parameters){
          type = Type_FunctionCall;
     }
+
+    virtual ~FunctionCallNode(){
+        delete parameters;
+    }
+
     QString name;
     ListElementNode* parameters;
 };
@@ -217,8 +252,13 @@ struct LogicalExpressionNode : public ExpressionNode {
     LogicalExpressionNode(ExpressionNode* node, LogicalExpressionNode* next = 0, Node::Operator op = OperatorNone)
         :condition(node), next(next), op(op){
         type = Type_LogicalExpression;
-
     }
+
+    virtual ~LogicalExpressionNode(){
+        delete condition;
+        delete next;
+    }
+
     ExpressionNode* condition;
     LogicalExpressionNode* next;
     Operator op;
@@ -228,8 +268,14 @@ struct IfStatementNode : public StatementNode {
     IfStatementNode(LogicalExpressionNode* condition, StatementListNode* block, StatementListNode* alternative_block = 0)
         :condition(condition), block(block), alternative_block(alternative_block){
          type = Type_IfStatement;
-
     }
+
+    virtual ~IfStatementNode(){
+        delete condition;
+        delete block;
+        delete alternative_block;
+    }
+
     LogicalExpressionNode* condition;
     StatementListNode* block;
     StatementListNode* alternative_block;
@@ -241,6 +287,11 @@ struct RootNode : public Node {
         nodes(nodes){
         type = Type_Source;
     }
+
+    virtual ~RootNode(){
+        delete nodes;
+    }
+
     StatementListNode* nodes;
 };
 

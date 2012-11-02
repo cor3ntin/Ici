@@ -371,8 +371,8 @@ static void yy_fatal_error (yyconst char msg[]  );
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
 
-#define YY_NUM_RULES 36
-#define YY_END_OF_BUFFER 37
+#define YY_NUM_RULES 37
+#define YY_END_OF_BUFFER 38
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -382,14 +382,14 @@ struct yy_trans_info
 	};
 static yyconst flex_int16_t yy_accept[79] =
     {   0,
-        0,    0,   25,   25,   21,   21,   29,   29,   37,   36,
-       35,    1,   15,   20,   34,   24,    5,    6,   36,   12,
-       36,   11,   36,    2,   33,    9,   10,   33,   33,   33,
-       33,   33,   33,    7,    8,   25,   27,   36,   21,   23,
-       36,   31,   29,   34,    3,    4,    0,    0,   33,   33,
-       33,   33,   33,   14,   33,    0,   25,   26,   21,   22,
-       31,   29,    0,   32,   13,   33,   33,   33,   33,   28,
-        0,   16,   33,   19,   17,   30,   18,    0
+        0,    0,   25,   25,   21,   21,   29,   29,   38,   37,
+       36,    1,   15,   20,   35,   24,    5,    6,   37,   12,
+       37,   11,   32,    2,   34,    9,   10,   34,   34,   34,
+       34,   34,   34,    7,    8,   25,   27,   37,   21,   23,
+       37,   31,   29,   35,    3,    4,    0,   32,   34,   34,
+       34,   34,   34,   14,   34,    0,   25,   26,   21,   22,
+       31,   29,    0,   33,   13,   34,   34,   34,   34,   28,
+        0,   16,   34,   19,   17,   30,   18,    0
     } ;
 
 static yyconst flex_int32_t yy_ec[256] =
@@ -937,17 +937,21 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-{ yylval.str = storeString(yytext) ; return TOKEN_IDENT; }
+{ yylval.dval = strtold(yytext, 0); return TOKEN_DIGIT; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-{/* skip */}
+{ yylval.str = storeString(yytext) ; return TOKEN_IDENT; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
 {/* skip */}
 	YY_BREAK
 case 36:
+YY_RULE_SETUP
+{/* skip */}
+	YY_BREAK
+case 37:
 YY_RULE_SETUP
 ECHO;
 	YY_BREAK

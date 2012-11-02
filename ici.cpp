@@ -204,6 +204,10 @@ ICISettingsPrivate::ICISettingsPrivate():
     functions.insert("equals", ICI::equals);
 }
 
+ICISettingsPrivate::~ICISettingsPrivate(){
+    delete ast;
+}
+
 void ICISettingsPrivate::parse(const  QByteArray & data){
     ICIParser parser(data);
     if(!parser.parse()){

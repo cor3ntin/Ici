@@ -139,17 +139,22 @@ QString replace_in_string(QString string, const QVariantMap & context){
 }
 
 
-ICISettings::ICISettings(const QString & file, QObject* parent)
+ICISettings::ICISettings(const QByteArray &data, QObject* parent)
     :QObject(parent), d(new ICISettingsPrivate){
 
-    QFile f(file);
-    f.open(QIODevice::ReadOnly);
-    if(f.error()!=QFile::NoError){
-        d->error = true;
-        d->errorString = f.errorString();
+    if(QFileInfo(data).exists()){
+        QFile f(data);
+        f.open(QIODevice::ReadOnly);
+        if(f.error()!=QFile::NoError){
+            d->error = true;
+            d->errorString = f.errorString();
+        }
+        else {
+            QByteArray data = f.readAll();
+            d->parse(data);
+        }
     }
-    else {
-        QByteArray data = f.readAll();
+    else{
         d->parse(data);
     }
 }
@@ -167,7 +172,6 @@ QString ICISettings::errorString() const{
 
 void ICISettings::setContext(const QVariantMap & context){
     d->context = context;
-    d->evaluate();
 }
 
 void ICISettings::setValue(const QString & key, const QVariant & value){
@@ -193,7 +197,10 @@ bool ICISettings::createFunction(const QString & name, IciFunction funct){
     return true;
 }
 
-
+bool ICISettings::evaluate(){
+    d->evaluate();
+    return !d->error;
+}
 
 
 
@@ -216,7 +223,6 @@ void ICISettingsPrivate::parse(const  QByteArray & data){
     }
     else{
         ast = parser.ast();
-        evaluate();
     }
 }
 

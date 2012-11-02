@@ -9,8 +9,8 @@ Aims
  * A minimalist (not Turing-complete) language to write simples and powerful configuration files
  * Use a syntax somehow similar to the INI format, hence the name
  * Can declare variables, list, maps
- * Boolean logic to tune the configuration based a pre-existing context
- * extensible through functions
+ * Boolean logic to tune the configuration based on a pre-existing context
+ * Extensible through functions
 
 Language specifications
 -----------------------

@@ -40,6 +40,4 @@ SOURCES += main.cpp \
     icigrammar.cpp \
     ici.cpp \
     icifunctions.cpp
-OTHER_FILES += ici.l ici.g test.txt \
-    test2.txt \
-    test3.txt
+OTHER_FILES += ici.l ici.g

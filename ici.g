@@ -22,7 +22,9 @@
 %token STRING
 %token DIGIT
 %token IDENT
-%token VARIABLE
+%token NULL
+%token TRUE
+%token FALSE
 %token DOT
 %token EQUAL
 %token PLUS_EQUAL
@@ -462,7 +464,30 @@ case $rule_number: {
     break;
 }
 ./
-
+Expression: NULL;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::NullNode> ();
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+Expression: TRUE;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (true);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+Expression: FALSE;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (false);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
 
 /.
         } // switch

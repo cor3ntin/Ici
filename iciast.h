@@ -37,7 +37,9 @@ struct Node
 
         Type_Expression,
         Type_NumericLiteral,
+        Type_BooleanLiteral,
         Type_StringLiteral,
+        Type_Null,
         Type_List,
         Type_Identifier,
 
@@ -164,6 +166,20 @@ struct NumericLiteralNode : public ExpressionNode {
     double value;
 };
 
+struct BooleanLiteralNode : public ExpressionNode {
+    BooleanLiteralNode(bool b):
+        value(b){
+        type = Type_BooleanLiteral;
+    }
+
+    bool value;
+};
+
+struct NullNode : public ExpressionNode {
+    NullNode(){
+        type = Type_Null;
+    }
+};
 struct ListElementNode : public Node {
     ListElementNode(ListElementNode* previous, ExpressionNode* value){
         this->next  = previous->next;

@@ -255,9 +255,29 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
         case ICI::Node::AssignementOperator:
             set_value(keys, value, context);
             break;
+        case ICI::Node::AssignementAdditionOperator:{
+            QVariant v = ::value(keys, context);
+            if(v.canConvert<QVariantList>()){
+                set_value(keys, v.toList() << value , context);
+            }
+            else
+                return false;
+            break;
+        }
+        case ICI::Node::AssignementSubstractionOperator:{
+            QVariant v = ::value(keys, context);
+            if(v.canConvert<QVariantList>()){
+                QVariantList lst = v.toList();
+                lst.removeAll(value);
+                set_value(keys, lst , context);
+            }
+            else
+                return false;
+            break;
+        }
         default:
             qDebug() << "not implemented";
-            break;
+            return false;
     }
     return true;
 }
@@ -266,6 +286,12 @@ bool ICISettingsPrivate::evaluate(ICI::ExpressionNode* node, QVariant & value){
     switch(node->type){
        case ICI::Node::Type_NumericLiteral:
            value = static_cast<ICI::NumericLiteralNode*>(node)->value;
+           return true;
+    case ICI::Node::Type_BooleanLiteral:
+           value = static_cast<ICI::BooleanLiteralNode*>(node)->value;
+           return true;
+        case ICI::Node::Type_Null:
+           value = QVariant();
            return true;
        case ICI::Node::Type_StringLiteral:
            value = replace_in_string(static_cast<ICI::StringLiteralNode*>(node)->value, context);

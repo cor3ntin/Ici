@@ -24,6 +24,7 @@ class StatementNode;
 class StatementListNode;
 class ExpressionNode;
 class NumericLiteralNode;
+class BooleanLiteralNode;
 class StringLiteralNode;
 class ListNode;
 class ListElementNode;
@@ -32,6 +33,7 @@ class AssignementNode;
 class LogicalExpressionNode;
 class OperatorNode;
 class IfStatementNode;
+class NullNode;
 
 }
 

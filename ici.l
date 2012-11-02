@@ -48,6 +48,9 @@ static QByteArray stringbuffer;
 "or" { return TOKEN_OR; }
 "!" { return TOKEN_NOT; }
 "else" { return TOKEN_ELSE; }
+"true" { return TOKEN_TRUE; }
+"false" { return TOKEN_FALSE; }
+"null" { return TOKEN_NULL; }
 
 \"  { BEGIN double_string; stringbuffer.clear(); }
 <double_string>[^\\"]*   { stringbuffer.append(yytext); }
@@ -65,6 +68,7 @@ static QByteArray stringbuffer;
 <raw_string>.*   { stringbuffer.append(yytext); }
 
 [0-9]+ { yylval.dval = strtold(yytext, 0); return TOKEN_DIGIT; }
+[0-9]+\.[0-9]+ { yylval.dval = strtold(yytext, 0); return TOKEN_DIGIT; }
 [a-zA-Z_]+    { yylval.str = storeString(yytext) ; return TOKEN_IDENT; }
 
 #.* {/* skip */}

@@ -250,6 +250,24 @@ case 34: {
     break;
 }
 
+case 35: {
+    sym(1).Node = ICI::makeAstNode<ICI::NullNode> ();
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+
+case 36: {
+    sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (true);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+
+case 37: {
+    sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (false);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+
         } // switch
         m_stack [m_tos].state = nt_action (act, lhs [r] - TERMINAL_COUNT);
         }

@@ -1,8 +1,4 @@
 *.o
-icigrammar.cpp
-icigrammar_p.h
-ici-lex.inc
-iciparser.cpp
-iciparser.h
+moc_*
 ici.pro.user
 Makefile

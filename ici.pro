@@ -27,8 +27,20 @@ qlalr.CONFIG += no_link explicit_dependencies target_predeps
 QMAKE_EXTRA_COMPILERS += qlalr
 
 
-HEADERS += iciparser.h icigrammar_p.h \
-    iciast.h
-SOURCES += main.cpp iciparser.cpp icigrammar.cpp \
-    iciast.cpp
-OTHER_FILES += ici.l ici.g test.txt
+HEADERS += iciparser.h \
+    icigrammar_p.h \
+    iciast.h \
+    iciast_fwd.h \
+    ici.h\
+    ici_p.h\
+    icifunctions.h
+
+SOURCES += main.cpp \
+    iciparser.cpp \
+    icigrammar.cpp \
+    iciast.cpp \
+    ici.cpp \
+    icifunctions.cpp
+OTHER_FILES += ici.l ici.g test.txt \
+    test2.txt \
+    test3.txt

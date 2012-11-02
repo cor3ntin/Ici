@@ -1,20 +1,15 @@
 #include <QCoreApplication>
-#include "iciparser.h"
+#include "ici.h"
 #include <QString>
 #include <QFile>
+#include <QDebug>
 
-int main(int argc, char *argv[])
+int main(int, char *argv[])
 {
-    QFile f(argv[1]);
-    f.open(QIODevice::ReadOnly);
-    QByteArray data = f.readAll();
-    ICIParser parser(data);
-    if(!parser.parse()){
-        qDebug("Parsing failed");
+    ICISettings settings(argv[1]);
+    if(settings.hasError()){
+       qDebug() << settings.errorString();
     }
-    qDebug() << "-------------";
-    QVariantMap values = parser.values();
-    for(QVariantMap::const_iterator it = values.begin(); it !=values.end(); ++it){
-        qDebug() << it.key() << it.value();
-    }
+    qDebug() << settings.values();
+    return 0;
 }

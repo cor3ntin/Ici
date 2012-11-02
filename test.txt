@@ -1,8 +1,9 @@
 #number
 number = 42
 
+
 #simple-quoted strings
-a = 'simple-quoted strings can have double "quotes", \'simple quotes\' must be escaped !'
+a = 'simple quoted string'
 
 #double quoted strings
 b = "double-quoted strings can have simple 'quotes', \"double quotes\" must be escaped !"
@@ -14,7 +15,7 @@ multi
 lines"
 
 #raw string
-c = {{{
+d = {{{
 raw string are usefull to put some code with lot of ''' or "" !"
 }}}
 
@@ -22,28 +23,24 @@ raw string are usefull to put some code with lot of ''' or "" !"
 list = [ ]
 
 #creating a list with some elements
-list = [ "lol", "foo", 42, list ]
+#list = [ "a" , "b" , ["a","b",c"] ]
 
 #adding to a list
-list += "value"
+#list += "value"
 
 #removing from a list
-list -= "value"
+#list -= "value"
+
+baaaaaaaaaar = "value"
+foo.b = "value"
 
 #using maps
-foo.bar = value
-foo.bar.baz = other_value
+foo.bar = "value"
+foo.bar.baz = "other_value"
 
 #using variables
-bar = foo
-bar = foo.baz
-list = [ foo, 42, foo.bar]
+#bar = foo
+#bar = foo.baz
+#list = [ foo, 42, foo.bar]
 
-
-#boolean test
-contains(key, "lol") || !contains("foo", "foo") {
-    x.z = "y"
-}
-
-
-
+lol(a,b)

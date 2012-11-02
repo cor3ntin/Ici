@@ -77,6 +77,7 @@ Adding functions
 			ctx->setErrorMessage("hello takes exactly one argument");
 		else
 			return "hello " + ctx->args().at(1).toString();
+		return QVariant();
 	}
 
 	ICISettings settings("foo = hello('foo')");

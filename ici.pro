@@ -38,7 +38,6 @@ HEADERS += iciparser.h \
 SOURCES += main.cpp \
     iciparser.cpp \
     icigrammar.cpp \
-    iciast.cpp \
     ici.cpp \
     icifunctions.cpp
 OTHER_FILES += ici.l ici.g test.txt \

@@ -22,8 +22,9 @@
 %token AND
 %token OR
 %token NOT
+%token ELSE
 
-%start Input
+%start Source
 
 /:
 #ifndef _ICIPARSER_H_
@@ -31,6 +32,7 @@
 
 #include <QtCore>
 #include "icigrammar_p.h"
+#include "iciast_fwd.h"
 
 class ICIParser: protected $table
 {
@@ -38,34 +40,59 @@ public:
     ICIParser(const QByteArray & data);
 
     bool parse();
-    int nextToken();
-    QVariantMap values() const;
+    QString errorString() const;
+    ICI::RootNode* ast() const;
 
 protected:
+    int nextToken();
     union Value {
-       const QString  *k;
-       const QVariant *v;
+          double dval;
+          ICI::Node* Node;
+          ICI::StatementNode* Statement;
+          ICI::StatementListNode* StatementList;
+          ICI::IdentifierNode* Identifier;
+          ICI::ExpressionNode* Expression;
+          ICI::LogicalExpressionNode* LogicalExpression;
+          ICI::ListElementNode* ListElement;
+          ICI::OperatorNode*    Operator;
+          const QString* str;
+    };
+    struct Loc {
+        int line;
+        int pos;
     };
     struct StackItem {
         int state;
-        QByteArray value;
+        Value value;
+        Loc loc;
     };
 
     void reallocateStack();
 
-    inline QByteArray &sym(int index)
+    inline Value &sym(int index)
     { return m_stack [m_tos + index - 1].value; }
+    inline Loc &loc(int index)
+    { return m_stack [m_tos + index - 1].loc; }
 
+
+    inline const QString* storeString(const QString & string){
+        return &*m_strings.insert(string);
+    }
+
+    ICI::RootNode* m_ast;
     int m_tos;
     int m_stack_size;
 
-    QByteArray yylval;
-
+    Value yylval;
     QVarLengthArray<StackItem> m_stack;
+    QSet<QString> m_strings;
+
+
     QByteArray m_data;
     void* m_lexdata;
 
-    QVariantMap m_values;
+    int m_line, m_pos;
+    QString m_errorString;
 };
 
 
@@ -78,15 +105,16 @@ protected:
 /.
 #include "iciparser.h"
 #include "ici-lex.inc"
+#include "iciast.h"
 
-#include <QtDebug>
+#define ICI_UP_LOC(node, start, end) node->line = start.line; node->pos = start.pos;
 
 ICIParser::ICIParser(const QByteArray & data)
-:m_tos(0), m_stack_size(0), m_data(data){
+:m_ast(0), m_tos(0), m_stack_size(0), m_data(data),m_line(0), m_pos(0){
 }
 
-QVariantMap ICIParser::values() const{
-    return m_values;
+ICI::RootNode* ICIParser::ast() const{
+   return m_ast;
 }
 
 void ICIParser::reallocateStack()
@@ -116,7 +144,6 @@ bool ICIParser::parse()
 
       if (yytoken == -1 && - TERMINAL_COUNT != action_index [state]){
           yytoken = nextToken();
-          qDebug() << "token" << yytoken;
       }
 
       int act = t_action (state, yytoken);
@@ -129,8 +156,10 @@ bool ICIParser::parse()
           if (++m_tos == m_stack_size)
             reallocateStack();
 
-          m_stack [m_tos].value = yylval; // ### save the token value here
+          m_stack [m_tos].value.dval = yytoken; // ### save the token value here
           m_stack [m_tos].state = act;
+          m_stack [m_tos].loc.line = m_line;
+          m_stack [m_tos].loc.pos = m_pos - yyleng;
           yytoken = -1;
         }
 
@@ -141,49 +170,253 @@ bool ICIParser::parse()
           m_tos -= rhs [r];
           act = m_stack [m_tos++].state;
 
-          qDebug() << r << sym(1);
           switch (r) {
 ./
 
-Input: Expression ;
-Input: Input Expression ;
+Source: StatementList ;
+/.
+case $rule_number: {
+  sym(1).Node = ICI::makeAstNode<ICI::RootNode> (ICI::finish(sym(1).StatementList));
+  ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+  m_ast = static_cast<ICI::RootNode*>(sym(1).Node);
+} break;
+./
+
+StatementList: StatementList Statement ;
+/.
+case $rule_number: {
+  sym(1).Node = ICI::makeAstNode<ICI::StatementListNode> (sym(1).StatementList, sym(2).Statement);
+  ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+} break;
+./
+StatementList: Statement ;
+/.
+case $rule_number: {
+  sym(1).Node = ICI::makeAstNode<ICI::StatementListNode> (sym(1).Statement);
+  ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+} break;
+./
+StatementBlock: Statement ;
+/.
+case $rule_number: {
+  sym(1).Node = ICI::makeAstNode<ICI::StatementListNode> (sym(1).Statement);
+  ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+} break;
+./
+StatementBlock: LBRACKET StatementList RBRACKET ;
+/.
+case $rule_number: {
+  sym(1).Node =  ICI::finish(sym(2).StatementList);
+} break;
+./
+StatementBlock: LBRACKET RBRACKET ;
+/.
+case $rule_number: {
+  sym(1).Node = ICI::finish(ICI::makeAstNode<ICI::StatementListNode> ());
+} break;
+./
+
+Statement: Assignement ;
+Statement: IfStatement ;
+Statement: FunctionCall;
+
+IfStatement: LogicalExpression StatementBlock ELSE StatementBlock;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(1).LogicalExpression,
+                  sym(2).StatementList, sym(4).StatementList);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(4))
+    break;
+}
+./
+IfStatement: LogicalExpression StatementBlock ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(1).LogicalExpression, sym(2).StatementList);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+
+LogicalExpression: LPAREN Expression RPAREN ;
+/.
+case $rule_number: {
+    sym(1).Node = sym(2).Node;
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
+LogicalExpression: Expression AND LogicalExpression ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(2).LogicalExpression, ICI::Node::AndOperator);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+LogicalExpression: Expression OR LogicalExpression ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(3).LogicalExpression, ICI::Node::OrOperator);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+LogicalExpression: NOT Expression ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(2).Expression, (ICI::LogicalExpressionNode*)0, ICI::Node::NotOperator);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
+LogicalExpression: Expression ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
 
 
-Expression: Assignement ;
-Expression: Condition LBRACKET Expression RBRACKET ;
-
-Condition: Condition AND Condition ;
-Condition: Condition OR Condition ;
-Condition: NOT Condition;
-Condition: Function ;
-
-
-Function: IDENT LPAREN FunctionsParametersOpt RPAREN ;
-
-FunctionsParameters: Value ;
-FunctionsParameters: FunctionsParameters COMMA Value ;
-FunctionsParametersOpt: ;
-FunctionsParametersOpt: FunctionsParameters ;
+Expression: FunctionCall;
+FunctionCall: StoredIdent LPAREN RPAREN ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::FunctionCallNode> (*(yylval.str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+FunctionCall: StoredIdent LPAREN ListParameters RPAREN ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::FunctionCallNode> (*(sym(1).str), ICI::finish(sym(3).ListElement));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
 
 AssignementOperator: EQUAL ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::OperatorNode> (ICI::Node::AssignementOperator);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
 AssignementOperator: PLUS_EQUAL ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::OperatorNode> (ICI::Node::AssignementAdditionOperator);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
 AssignementOperator: MINUS_EQUAL ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::OperatorNode> (ICI::Node::AssignementSubstractionOperator);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
 
-Assignement: Key AssignementOperator Value ;
+Assignement: Identifier AssignementOperator Expression ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::AssignementNode> (sym(1).Identifier, sym(2).Operator, sym(3).Expression);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
 
-Value: DIGIT ;
-Value: STRING;
-Value: Key ;
-Value: List ;
+Expression : List ;
+List : LSQUARE_BRACKET RSQUARE_BRACKET ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::ListNode> ();
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+List : LSQUARE_BRACKET ListParameters RSQUARE_BRACKET ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::ListNode> (ICI::finish(sym(2).ListElement));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
+ListParameters: Expression ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::ListElementNode> (sym(1).Expression);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+ListParameters: ListParameters COMMA Expression ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::ListElementNode> (sym(1).ListElement, sym(3).Expression);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
+    break;
+}
+./
 
-List : LSQUARE_BRACKET ListParametersOpt RSQUARE_BRACKET;
-ListParameters: Value ;
-ListParameters: ListParameters COMMA Value ;
-ListParametersOpt: ;
-ListParametersOpt: ListParameters ;
+Expression: Identifier;
 
-Key: Key DOT IDENT;
-Key: IDENT ;
+Identifier: IdentifierPart ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (ICI::finish(sym(1).Identifier));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+
+IdentifierPart: IdentifierPart DOT StoredIdent ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, *(sym(3).str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
+
+IdentifierPart: StoredIdent ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (*(sym(1).str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+StoredIdent: IDENT ;
+/.
+case $rule_number: {
+    sym(1).str = yylval.str;
+    break;
+}
+./
+Expression: DIGIT ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (yylval.dval);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+Expression: STRING;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(yylval.str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
 
 
 /.
@@ -191,11 +424,16 @@ Key: IDENT ;
         m_stack [m_tos].state = nt_action (act, lhs [r] - TERMINAL_COUNT);
         }
         else {
-            qDebug() << "Error";
+            m_errorString = QString("Syntax error at Line %1:%2")
+            .arg(m_line).arg(m_pos);
             break;
         }
     }
    return false;
+}
+
+QString ICIParser::errorString() const{
+   return m_errorString;
 }
 
 ./

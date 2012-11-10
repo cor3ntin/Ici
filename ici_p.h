@@ -33,7 +33,7 @@ class ICISettingsPrivate{
 public:
     ICISettingsPrivate();
     ~ICISettingsPrivate();
-    void parse(const  QByteArray & data);
+    void parse(const  QByteArray & data,const QString & fileName = QString());
 
     bool error;
     QString errorString;
@@ -44,11 +44,13 @@ public:
 
     void evaluate();
     bool evaluate(ICI::StatementListNode*);
-    bool evaluate(ICI::StatementNode*);
+    bool evaluate(ICI::StatementNode*, ICI::StatementListNode*);
+    bool evaluate(ICI::IncludeStatementNode*, ICI::StatementListNode*);
     bool evaluate(ICI::ExpressionNode*, QVariant &value);
     bool evaluate(ICI::ListElementNode*, QVariantList &value);
     bool evaluate(ICI::IdentifierNode*);
     bool evaluate(ICI::AssignementNode*);
+    bool evaluate(ICI::UnsetStatementNode*);
     bool evaluate(ICI::FunctionCallNode*,QVariant &);
     bool evaluate(ICI::IfStatementNode*);
     bool evaluate(ICI::LogicalExpressionNode*,bool & istrue);

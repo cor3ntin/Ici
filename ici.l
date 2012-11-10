@@ -51,6 +51,8 @@ static QByteArray stringbuffer;
 "true" { return TOKEN_TRUE; }
 "false" { return TOKEN_FALSE; }
 "null" { return TOKEN_NULL; }
+"include" { return TOKEN_INCLUDE; }
+"unset" { return TOKEN_UNSET; }
 
 \"  { BEGIN double_string; stringbuffer.clear(); }
 <double_string>[^\\"]*   { stringbuffer.append(yytext); }

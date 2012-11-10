@@ -31,6 +31,8 @@ struct Node
         Type_Statements,
         Type_Statement,
         Type_IfStatement,
+        Type_Include,
+        Type_Unset,
 
         Type_Assignement,
         Type_Operator,
@@ -65,6 +67,7 @@ struct Node
 
     int  line,pos;
     Type type;
+    QString file;
 };
 
 struct StatementNode : public Node {
@@ -72,6 +75,16 @@ struct StatementNode : public Node {
         type = Type_Statement;
     }
     virtual ~StatementNode(){}
+};
+
+struct IncludeStatementNode : public StatementNode {
+    IncludeStatementNode(const QString & path)
+        :path(path), executed(false){
+        type = Type_Include;
+    }
+    virtual ~IncludeStatementNode(){}
+    QString path;
+    bool executed;
 };
 
 struct StatementListNode : public Node {
@@ -149,6 +162,17 @@ struct IdentifierNode : public ExpressionNode {
 
     IdentifierNode* next;
     QString name;
+};
+
+struct UnsetStatementNode : public StatementNode {
+    UnsetStatementNode(IdentifierNode* identifier)
+        :identifier(identifier){
+        type = Type_Unset;
+    }
+    virtual ~UnsetStatementNode(){
+        delete identifier;
+    }
+    IdentifierNode* identifier;
 };
 
 struct AssignementNode : public StatementNode {
@@ -246,6 +270,17 @@ struct FunctionCallNode : public ExpressionNode {
 
     QString name;
     ListElementNode* parameters;
+};
+
+struct FunctionCallStatementNode : public StatementNode {
+    FunctionCallStatementNode(FunctionCallNode* funct)
+        :funct(funct){
+         type = Type_FunctionCall;
+    }
+    virtual ~FunctionCallStatementNode(){
+        delete funct;
+    }
+    FunctionCallNode* funct;
 };
 
 struct LogicalExpressionNode : public ExpressionNode {

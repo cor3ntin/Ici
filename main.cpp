@@ -25,6 +25,8 @@ int main(int, char *argv[])
     if(settings.hasError()){
        qDebug() << settings.errorString();
     }
+    settings.evaluate();
+    qDebug() << settings.errorString();
     qDebug() << settings.values();
     return 0;
 }

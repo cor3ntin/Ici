@@ -24,7 +24,7 @@
 class ICIParser: protected ICIGrammar
 {
 public:
-    ICIParser(const QByteArray & data);
+    ICIParser(const QByteArray & data, const QString & fileName = QString());
 
     bool parse();
     QString errorString() const;
@@ -36,6 +36,7 @@ protected:
           double dval;
           ICI::Node* Node;
           ICI::StatementNode* Statement;
+          ICI::FunctionCallNode* FunctionCall;
           ICI::StatementListNode* StatementList;
           ICI::IdentifierNode* Identifier;
           ICI::ExpressionNode* Expression;
@@ -76,6 +77,7 @@ protected:
 
 
     QByteArray m_data;
+    QString m_fileName;
     void* m_lexdata;
 
     int m_line, m_pos;

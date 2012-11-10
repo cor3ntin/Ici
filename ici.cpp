@@ -60,6 +60,28 @@ bool contains(QStringList keys, const QVariantMap & context){
     }while(!keys.isEmpty());
     return true;
 }
+
+bool unset(QStringList keys, QVariantMap & context){
+    if(keys.size() == 1){
+        return context.remove(keys.first()) > 0;
+    }
+    QVariant variant = context;
+    QString key;
+    do{
+        key = keys.takeFirst();
+        if(variant.canConvert<QVariantMap>()){
+            QVariantMap map = variant.toMap();
+            if(map.contains(key))
+                variant = map.value(key);
+            else
+                return false;
+        }
+        else
+            return false;
+    }while(!keys.isEmpty());
+    return context.remove(key) > 0;
+}
+
 bool contains(QString key, const QVariantMap & context){
     return contains(key.split('.'), context);
 }
@@ -113,7 +135,6 @@ QString replace_in_string(QString string, const QVariantMap & context){
         else if( c == '}' && !escaped && --in == 0){
             end = i;
             QString substring = replace_in_string(string.mid(begin+2, (i-begin)-2), context);
-            qDebug() << string.mid(begin+2, (i-begin)-2);
             QStringList keys = substring.split('.');
             bool replaced = false;
             if(contains(keys, context)){
@@ -150,8 +171,8 @@ ICISettings::ICISettings(const QByteArray &data, QObject* parent)
             d->errorString = f.errorString();
         }
         else {
-            QByteArray data = f.readAll();
-            d->parse(data);
+            QByteArray content = f.readAll();
+            d->parse(content, QFileInfo(data).absoluteFilePath());
         }
     }
     else{
@@ -215,8 +236,8 @@ ICISettingsPrivate::~ICISettingsPrivate(){
     delete ast;
 }
 
-void ICISettingsPrivate::parse(const  QByteArray & data){
-    ICIParser parser(data);
+void ICISettingsPrivate::parse(const  QByteArray & data, const QString & fileName){
+    ICIParser parser(data, fileName);
     if(!parser.parse()){
         error = true;
         errorString = parser.errorString();
@@ -234,14 +255,14 @@ void ICISettingsPrivate::evaluate(){
 
 bool ICISettingsPrivate::evaluate(ICI::StatementListNode* node){
     while(node){
-        if(!evaluate(node->node))
+        if(!evaluate(node->node, node))
             return false;
         node = node->next;
     }
     return true;
 }
 
-bool ICISettingsPrivate::evaluate(ICI::StatementNode* node){
+bool ICISettingsPrivate::evaluate(ICI::StatementNode* node, ICI::StatementListNode* parent){
     if(!node)
         return true;
     switch(node->type){
@@ -249,9 +270,66 @@ bool ICISettingsPrivate::evaluate(ICI::StatementNode* node){
            return evaluate(static_cast<ICI::AssignementNode*>(node));
         case ICI::Node::Type_IfStatement:
            return evaluate(static_cast<ICI::IfStatementNode*>(node));
+        case ICI::Node::Type_Include:
+           return evaluate(static_cast<ICI::IncludeStatementNode*>(node), parent);
+        case ICI::Node::Type_FunctionCall:{
+           QVariant returnValue;
+           bool success = evaluate(static_cast<ICI::FunctionCallStatementNode*>(node)->funct, returnValue);
+           if(!returnValue.isNull()){
+             qWarning() << QString("ignored return value of function %1 at line %2")
+                       .arg(static_cast<ICI::FunctionCallStatementNode*>(node)->funct->name)
+                       .arg(static_cast<ICI::FunctionCallStatementNode*>(node)->funct->line);
+           }
+           return success;
+        }
+        case ICI::Node::Type_Unset:
+            return evaluate(static_cast<ICI::UnsetStatementNode*>(node));
         default:return false;
     }
     return false;
+}
+
+bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::StatementListNode* parent){
+    if(node->executed)
+        return true;
+    node->executed = true;
+    if(node->file.isEmpty()){
+        errorString = "include() require a file";
+        return false;
+    }
+    QDir dir(QFileInfo(node->path).absolutePath());
+    QStringList paths;
+    QString path = dir.absoluteFilePath(replace_in_string(node->path, context));
+    if(QFileInfo(path).isFile())
+        paths << dir.absoluteFilePath(node->path);
+    else if(QFileInfo(path).isDir()){
+        Q_FOREACH(const QFileInfo & file, QDir(path).entryInfoList(QDir::NoDotAndDotDot|QDir::Files)){
+            qDebug() << file.absoluteFilePath();
+            paths << file.absoluteFilePath();
+        }
+    }
+    ICI::StatementListNode* next_node = parent->next;
+    Q_FOREACH(const QString & filepath, paths){
+        QFile f(filepath);
+        if(!f.open(QIODevice::ReadOnly)){
+            errorString = QString("Can not open file %1").arg(path);
+            return false;
+        }
+        QByteArray data = f.readAll();
+        ICIParser parser(data);
+        if(!parser.parse()){
+            errorString = QString("Can not parse file %1 : %2").arg(path, parser.errorString());
+            return false;
+        }
+        ICI::StatementListNode* firstIncludedNode = parser.ast()->nodes;
+        ICI::StatementListNode* currentIncludedNode = firstIncludedNode;
+        while(currentIncludedNode && currentIncludedNode->next)
+            currentIncludedNode = currentIncludedNode->next;
+        currentIncludedNode->next = next_node;
+        next_node = firstIncludedNode;
+    }
+    parent->next = next_node;
+    return true;
 }
 
 bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
@@ -289,6 +367,11 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
             qDebug() << "not implemented";
             return false;
     }
+    return true;
+}
+
+bool ICISettingsPrivate::evaluate(ICI::UnsetStatementNode* node){
+    unset(node->identifier->keys(), context);
     return true;
 }
 
@@ -351,7 +434,6 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
     ctx.d->ctx = this;
     ctx.d->args = parameters;
     result = it.value()(&ctx);
-    qDebug() << result.toBool();
     return !error;
 }
 

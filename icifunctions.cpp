@@ -19,7 +19,7 @@ namespace ICI{
 
 QVariant contains(ICISettingsContext* ctx){
     if(ctx->args().size() != 1){
-        ctx->setErrorMessage(QString("contains expect exactly 1 argument"));
+        ctx->setErrorMessage(QString("contains expects exactly 1 argument"));
         return false;
     }
     return ctx->exists(ctx->args().at(0).toString());
@@ -27,7 +27,7 @@ QVariant contains(ICISettingsContext* ctx){
 
 QVariant equals(ICISettingsContext* ctx){
     if(ctx->args().size() < 2){
-        ctx->setErrorMessage(QString("equals expect at least 2 arguments"));
+        ctx->setErrorMessage(QString("equals expects at least 2 arguments"));
         return false;
     }
     QVariant arg = ctx->args().at(0);

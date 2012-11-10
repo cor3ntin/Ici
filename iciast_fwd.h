@@ -33,6 +33,9 @@ class AssignementNode;
 class LogicalExpressionNode;
 class OperatorNode;
 class IfStatementNode;
+class IncludeStatementNode;
+class UnsetStatementNode;
+class FunctionCallNode;
 class NullNode;
 
 }

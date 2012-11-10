@@ -40,6 +40,8 @@
 %token OR
 %token NOT
 %token ELSE
+%token INCLUDE
+%token UNSET
 
 %start Source
 
@@ -69,7 +71,7 @@
 class ICIParser: protected $table
 {
 public:
-    ICIParser(const QByteArray & data);
+    ICIParser(const QByteArray & data, const QString & fileName = QString());
 
     bool parse();
     QString errorString() const;
@@ -81,6 +83,7 @@ protected:
           double dval;
           ICI::Node* Node;
           ICI::StatementNode* Statement;
+          ICI::FunctionCallNode* FunctionCall;
           ICI::StatementListNode* StatementList;
           ICI::IdentifierNode* Identifier;
           ICI::ExpressionNode* Expression;
@@ -121,6 +124,7 @@ protected:
 
 
     QByteArray m_data;
+    QString m_fileName;
     void* m_lexdata;
 
     int m_line, m_pos;
@@ -154,10 +158,10 @@ protected:
 #include "ici-lex.inc"
 #include "iciast.h"
 
-#define ICI_UP_LOC(node, start, end) node->line = start.line; node->pos = start.pos;
+#define ICI_UP_LOC(node, start, end) node->file = m_fileName; node->line = start.line; node->pos = start.pos;
 
-ICIParser::ICIParser(const QByteArray & data)
-:m_ast(0), m_tos(0), m_stack_size(0), m_data(data),m_line(0), m_pos(0){
+ICIParser::ICIParser(const QByteArray & data, const QString & fileName)
+:m_ast(0), m_tos(0), m_stack_size(0), m_data(data),m_fileName(fileName), m_line(0), m_pos(0){
 }
 
 ICI::RootNode* ICIParser::ast() const{
@@ -243,13 +247,7 @@ case $rule_number: {
   ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
 } break;
 ./
-StatementBlock: Statement ;
-/.
-case $rule_number: {
-  sym(1).Node = ICI::makeAstNode<ICI::StatementListNode> (sym(1).Statement);
-  ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
-} break;
-./
+
 StatementBlock: LBRACKET StatementList RBRACKET ;
 /.
 case $rule_number: {
@@ -265,7 +263,34 @@ case $rule_number: {
 
 Statement: Assignement ;
 Statement: IfStatement ;
+Statement: IncludeStatement;
+Statement: UnsetStatement;
+
 Statement: FunctionCall;
+/.
+case $rule_number: {
+sym(1).Node = ICI::makeAstNode<ICI::FunctionCallStatementNode>(sym(1).FunctionCall);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+IncludeStatement: INCLUDE STRING;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IncludeStatementNode>(*(yylval.str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
+
+UnsetStatement: UNSET Identifier;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::UnsetStatementNode>(sym(2).Identifier);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
 
 IfStatement: LogicalExpression StatementBlock ELSE StatementBlock;
 /.

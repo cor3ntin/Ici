@@ -18,11 +18,25 @@
 namespace ICI{
 
 QVariant contains(ICISettingsContext* ctx){
-    if(ctx->args().size() != 1){
-        ctx->setErrorMessage(QString("contains expects exactly 1 argument"));
+    if(ctx->args().size() != 2){
+        ctx->setErrorMessage(QString("contains expect exactly 2 argument"));
         return false;
     }
-    return ctx->exists(ctx->args().at(0).toString());
+    QVariant a = ctx->args().at(0);
+    QVariant b = ctx->args().at(1);
+    if(a.canConvert<QVariantList>()){
+        if(a.toList().contains(b))
+            return true;
+    }
+    if(a.canConvert<QVariantMap>() && b.canConvert<QString>()){
+        if(a.toMap().contains(b.toString()))
+            return true;
+    }
+    if(a.canConvert<QString>() && b.canConvert<QString>()){
+        if(a.toString().contains(b.toString()))
+            return true;
+    }
+    return false;
 }
 
 QVariant equals(ICISettingsContext* ctx){

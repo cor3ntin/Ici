@@ -238,6 +238,7 @@ ICISettingsPrivate::~ICISettingsPrivate(){
 
 void ICISettingsPrivate::parse(const  QByteArray & data, const QString & fileName){
     ICIParser parser(data, fileName);
+    qDegug() << data;
     if(!parser.parse()){
         error = true;
         errorString = parser.errorString();

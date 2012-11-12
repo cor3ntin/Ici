@@ -47,6 +47,7 @@ static QByteArray stringbuffer;
 "and" { return TOKEN_AND; }
 "or" { return TOKEN_OR; }
 "!" { return TOKEN_NOT; }
+"if" { return TOKEN_IF; }
 "else" { return TOKEN_ELSE; }
 "true" { return TOKEN_TRUE; }
 "false" { return TOKEN_FALSE; }

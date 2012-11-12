@@ -39,6 +39,7 @@
 %token AND
 %token OR
 %token NOT
+%token IF
 %token ELSE
 %token INCLUDE
 %token UNSET
@@ -260,6 +261,12 @@ case $rule_number: {
   sym(1).Node = ICI::finish(ICI::makeAstNode<ICI::StatementListNode> ());
 } break;
 ./
+StatementBlock: Statement ;
+/.
+case $rule_number: {
+  sym(1).Node = ICI::finish(ICI::makeAstNode<ICI::StatementListNode> (sym(1).Statement));
+} break;
+./
 
 Statement: Assignement ;
 Statement: IfStatement ;
@@ -292,23 +299,24 @@ case $rule_number: {
 }
 ./
 
-IfStatement: LogicalExpression StatementBlock ELSE StatementBlock;
+IfStatement: IF LogicalExpression StatementBlock ELSE StatementBlock;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(1).LogicalExpression,
-                  sym(2).StatementList, sym(4).StatementList);
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(4))
+    sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).LogicalExpression,
+                  sym(3).StatementList, sym(5).StatementList);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(5))
     break;
 }
 ./
-IfStatement: LogicalExpression StatementBlock ;
+IfStatement: IF LogicalExpression StatementBlock ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(1).LogicalExpression, sym(2).StatementList);
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).LogicalExpression, sym(3).StatementList);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
 ./
+
 
 LogicalExpression: LPAREN Expression RPAREN ;
 /.

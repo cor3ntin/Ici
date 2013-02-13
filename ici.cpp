@@ -238,7 +238,6 @@ ICISettingsPrivate::~ICISettingsPrivate(){
 
 void ICISettingsPrivate::parse(const  QByteArray & data, const QString & fileName){
     ICIParser parser(data, fileName);
-    qDegug() << data;
     if(!parser.parse()){
         error = true;
         errorString = parser.errorString();
@@ -298,11 +297,11 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
         errorString = "include() require a file";
         return false;
     }
-    QDir dir(QFileInfo(node->path).absolutePath());
+    QDir dir(QFileInfo(node->file).absolutePath());
     QStringList paths;
     QString path = dir.absoluteFilePath(replace_in_string(node->path, context));
     if(QFileInfo(path).isFile())
-        paths << dir.absoluteFilePath(node->path);
+        paths << path;
     else if(QFileInfo(path).isDir()){
         Q_FOREACH(const QFileInfo & file, QDir(path).entryInfoList(QDir::NoDotAndDotDot|QDir::Files)){
             qDebug() << file.absoluteFilePath();
@@ -311,6 +310,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
     }
     ICI::StatementListNode* next_node = parent->next;
     Q_FOREACH(const QString & filepath, paths){
+
         QFile f(filepath);
         if(!f.open(QIODevice::ReadOnly)){
             errorString = QString("Can not open file %1").arg(path);
@@ -456,6 +456,21 @@ bool ICISettingsPrivate::evaluate(ICI::LogicalExpressionNode* node, bool & istru
         return false;
     }
     istrue = value.toBool();
+    if(node->op == ICI::Node::NotOperator){
+        istrue = !istrue;
+        return true;
+    }
+    if(node->next){
+        if(node->op == ICI::Node::OrOperator && istrue)
+            return true;
+        bool nextistrue = false;
+        if(!evaluate(node->next, nextistrue))
+            return false;
+        if(node->op == ICI::Node::AndOperator)
+            istrue = istrue && nextistrue;
+        if(node->op == ICI::Node::OrOperator)
+            istrue = istrue || nextistrue;
+    }
     return true;
 }
 

@@ -2,7 +2,7 @@ ICI
 ===
 
 ICI is both a language targeting configuration files and its implementation in Qt, 
-using the not well-known nor documented, yet fantastic, qlar [http://qt.gitorious.org/qt/qlalr]
+using the not well-known nor documented, yet fantastic, qlalr [http://qt.gitorious.org/qt/qlalr]
 
 Aims
 ---
@@ -38,7 +38,7 @@ Language specifications
     test = contains(list, 42);
     
     #logical expressions.
-    equals(test, true){
+    if equals(test, true){
         mystring = "let's put ${mystring} here !" #use variables inside strings
     }
     else {
@@ -48,7 +48,7 @@ Language specifications
        list = null
     }
     #complex expressions
-    !equals(foo, 42) or (equals(bar, 42) and equals(1,2,3))
+    if !equals(foo, 42) or (equals(bar, 42) and equals(1,2,3))
        var = "look, no brackets !"
 
 C++/Qt api

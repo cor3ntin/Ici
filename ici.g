@@ -329,7 +329,7 @@ case $rule_number: {
 LogicalExpression: Expression AND LogicalExpression ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(2).LogicalExpression, ICI::Node::AndOperator);
+    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(3).LogicalExpression, ICI::Node::AndOperator);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }

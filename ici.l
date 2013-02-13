@@ -1,5 +1,7 @@
 %option noyywrap
 %option nounput
+%option nounistd
+%option never-interactive
 
 %{
 /****************************************************************************
@@ -70,8 +72,8 @@ static QByteArray stringbuffer;
 <raw_string>\n\"\"\"  { yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
 <raw_string>.*   { stringbuffer.append(yytext); }
 
-[0-9]+ { yylval.dval = strtold(yytext, 0); return TOKEN_DIGIT; }
-[0-9]+\.[0-9]+ { yylval.dval = strtold(yytext, 0); return TOKEN_DIGIT; }
+[0-9]+ { yylval.dval = QByteArray(yytext).toDouble(); return TOKEN_DIGIT; }
+[0-9]+\.[0-9]+ { yylval.dval = QByteArray(yytext).toDouble(); return TOKEN_DIGIT; }
 [a-zA-Z_]+    { yylval.str = storeString(yytext) ; return TOKEN_IDENT; }
 
 #.* {/* skip */}

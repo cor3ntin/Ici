@@ -1,5 +1,6 @@
+#line 2 "ici-lex.inc"
 
-#line 3 "ici-lex.inc"
+#line 4 "ici-lex.inc"
 
 #define  YY_INT_ALIGNED short int
 
@@ -523,6 +524,9 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
+#line 1 "ici.l"
+#define YY_NO_UNISTD_H 1
+#line 7 "ici.l"
 /****************************************************************************
 **
 ** Copyright (C) 2012 Corentin Jabot
@@ -544,7 +548,12 @@ char *yytext;
 #define YY_DECL int ICIParser::nextToken()
 #define YY_USER_ACTION m_pos += yyleng;
 
+
 static QByteArray stringbuffer;
+
+
+
+#line 557 "ici-lex.inc"
 
 #define INITIAL 0
 #define simple_string 1
@@ -732,6 +741,11 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
+#line 34 "ici.l"
+
+
+#line 748 "ici-lex.inc"
+
 	if ( !(yy_init) )
 		{
 		(yy_init) = 1;
@@ -789,16 +803,12 @@ yy_match:
 			yy_current_state = yy_nxt[yy_base[yy_current_state] + (unsigned int) yy_c];
 			++yy_cp;
 			}
-		while ( yy_base[yy_current_state] != 129 );
+		while ( yy_current_state != 91 );
+		yy_cp = (yy_last_accepting_cpos);
+		yy_current_state = (yy_last_accepting_state);
 
 yy_find_action:
 		yy_act = yy_accept[yy_current_state];
-		if ( yy_act == 0 )
-			{ /* have to back up */
-			yy_cp = (yy_last_accepting_cpos);
-			yy_current_state = (yy_last_accepting_state);
-			yy_act = yy_accept[yy_current_state];
-			}
 
 		YY_DO_BEFORE_ACTION;
 
@@ -816,168 +826,209 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
+#line 36 "ici.l"
 { ++m_line; m_pos = 0; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
+#line 38 "ici.l"
 { return TOKEN_EQUAL; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
+#line 39 "ici.l"
 { return TOKEN_PLUS_EQUAL; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
+#line 40 "ici.l"
 { return TOKEN_MINUS_EQUAL; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
+#line 41 "ici.l"
 { return TOKEN_LPAREN; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
+#line 42 "ici.l"
 { return TOKEN_RPAREN; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
+#line 43 "ici.l"
 { return TOKEN_LBRACKET; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
+#line 44 "ici.l"
 { return TOKEN_RBRACKET; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
+#line 45 "ici.l"
 { return TOKEN_LSQUARE_BRACKET; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
+#line 46 "ici.l"
 { return TOKEN_RSQUARE_BRACKET; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
+#line 47 "ici.l"
 { return TOKEN_DOT; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
+#line 48 "ici.l"
 { return TOKEN_COMMA; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
+#line 49 "ici.l"
 { return TOKEN_AND; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
+#line 50 "ici.l"
 { return TOKEN_OR; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
+#line 51 "ici.l"
 { return TOKEN_NOT; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
+#line 52 "ici.l"
 { return TOKEN_IF; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
+#line 53 "ici.l"
 { return TOKEN_ELSE; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
+#line 54 "ici.l"
 { return TOKEN_TRUE; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
+#line 55 "ici.l"
 { return TOKEN_FALSE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
+#line 56 "ici.l"
 { return TOKEN_NULL; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
+#line 57 "ici.l"
 { return TOKEN_INCLUDE; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
+#line 58 "ici.l"
 { return TOKEN_UNSET; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
+#line 60 "ici.l"
 { BEGIN double_string; stringbuffer.clear(); }
 	YY_BREAK
 case 24:
 /* rule 24 can match eol */
 YY_RULE_SETUP
+#line 61 "ici.l"
 { stringbuffer.append(yytext); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
+#line 62 "ici.l"
 { stringbuffer.append(yytext[1]); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
+#line 63 "ici.l"
 { yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
+#line 65 "ici.l"
 { BEGIN simple_string; stringbuffer.clear(); }
 	YY_BREAK
 case 28:
 /* rule 28 can match eol */
 YY_RULE_SETUP
+#line 66 "ici.l"
 { stringbuffer.append(yytext); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
+#line 67 "ici.l"
 { stringbuffer.append(yytext[1]); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
+#line 68 "ici.l"
 { yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
+#line 70 "ici.l"
 { BEGIN raw_string; stringbuffer.clear(); }
 	YY_BREAK
 case 32:
 /* rule 32 can match eol */
 YY_RULE_SETUP
+#line 71 "ici.l"
 { if(!stringbuffer.isEmpty()) {stringbuffer.append(yytext);}}
 	YY_BREAK
 case 33:
 /* rule 33 can match eol */
 YY_RULE_SETUP
+#line 72 "ici.l"
 { yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
+#line 73 "ici.l"
 { stringbuffer.append(yytext); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-{ yylval.dval = strtold(yytext, 0); return TOKEN_DIGIT; }
+#line 75 "ici.l"
+{ yylval.dval = QByteArray(yytext).toDouble(); return TOKEN_DIGIT; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-{ yylval.dval = strtold(yytext, 0); return TOKEN_DIGIT; }
+#line 76 "ici.l"
+{ yylval.dval = QByteArray(yytext).toDouble(); return TOKEN_DIGIT; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
+#line 77 "ici.l"
 { yylval.str = storeString(yytext) ; return TOKEN_IDENT; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
+#line 79 "ici.l"
 {/* skip */}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
+#line 80 "ici.l"
 {/* skip */}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
+#line 82 "ici.l"
 ECHO;
 	YY_BREAK
+#line 1032 "ici-lex.inc"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(simple_string):
 case YY_STATE_EOF(double_string):
@@ -1047,7 +1098,8 @@ case YY_STATE_EOF(raw_string):
 
 			else
 				{
-				yy_cp = (yy_c_buf_p);
+				yy_cp = (yy_last_accepting_cpos);
+				yy_current_state = (yy_last_accepting_state);
 				goto yy_find_action;
 				}
 			}
@@ -1493,10 +1545,6 @@ static void yy_load_buffer_state  (void)
 	yyfree((void *) b  );
 }
 
-#ifndef __cplusplus
-extern int isatty (int );
-#endif /* __cplusplus */
-    
 /* Initializes or reinitializes a buffer.
  * This function is sometimes called more than once on the same buffer,
  * such as during a yyrestart() or at EOF.
@@ -1520,7 +1568,7 @@ extern int isatty (int );
         b->yy_bs_column = 0;
     }
 
-        b->yy_is_interactive = file ? (isatty( fileno(file) ) > 0) : 0;
+        b->yy_is_interactive = 0;
     
 	errno = oerrno;
 }
@@ -1940,4 +1988,8 @@ void yyfree (void * ptr )
 }
 
 #define YYTABLES_NAME "yytables"
+
+#line 82 "ici.l"
+
+
 

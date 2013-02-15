@@ -48,6 +48,7 @@ public:
     bool evaluate(ICI::IncludeStatementNode*, ICI::StatementListNode*);
     bool evaluate(ICI::ExpressionNode*, QVariant &value);
     bool evaluate(ICI::ListElementNode*, QVariantList &value);
+    bool evaluate(ICI::MapElementNode*, QVariantMap &values);
     bool evaluate(ICI::IdentifierNode*);
     bool evaluate(ICI::AssignementNode*);
     bool evaluate(ICI::UnsetStatementNode*);

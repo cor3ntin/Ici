@@ -403,6 +403,14 @@ bool ICISettingsPrivate::evaluate(ICI::ExpressionNode* node, QVariant & value){
            value = lst;
            return true;
        }
+       case ICI::Node::Type_Map:{
+            QVariantMap map;
+            ICI::MapElementNode* elem =  static_cast<ICI::MapNode*>(node)->nodes;
+            if(!evaluate(elem, map))
+                return false;
+            value = map;
+            return true;
+        }
        default: return false;
     }
     return false;
@@ -414,6 +422,17 @@ bool ICISettingsPrivate::evaluate(ICI::ListElementNode* elem, QVariantList &valu
        if(!evaluate(elem->value, value))
            return false;
        values.append(value);
+       elem = elem->next;
+   }
+   return true;
+}
+
+bool ICISettingsPrivate::evaluate(ICI::MapElementNode* elem, QVariantMap &values) {
+    while(elem){
+       QVariant value;
+       if(!evaluate(elem->value, value))
+           return false;
+       set_value(elem->key->name, value, values);
        elem = elem->next;
    }
    return true;

@@ -43,6 +43,7 @@ struct Node
         Type_StringLiteral,
         Type_Null,
         Type_List,
+        Type_Map,
         Type_Identifier,
 
         Type_FunctionCall,
@@ -256,6 +257,46 @@ struct ListNode : public ExpressionNode {
     }
 
     ListElementNode* nodes;
+};
+
+struct MapElementNode : public Node {
+    MapElementNode(MapElementNode* previous, IdentifierNode* key, ExpressionNode* value){
+        this->next  = previous->next;
+        previous->next = this;
+        this->key = key;
+        this->value = value;
+        type = Type_Map;
+    }
+
+    MapElementNode(IdentifierNode* key, ExpressionNode* value){
+        this->next  = this;
+        this->key   = key;
+        this->value = value;
+        type = Type_Map;
+    }
+
+    virtual ~MapElementNode(){
+        delete next;
+        delete value;
+        delete key;
+    }
+
+    MapElementNode* next;
+    ExpressionNode* value;
+    IdentifierNode* key;
+};
+
+struct MapNode : public ExpressionNode {
+    MapNode(MapElementNode* node = 0){
+        nodes = node;
+        type = Type_Map;
+    }
+
+    virtual ~MapNode(){
+        delete nodes;
+    }
+
+    MapElementNode* nodes;
 };
 
 struct FunctionCallNode : public ExpressionNode {

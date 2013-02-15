@@ -28,6 +28,8 @@ class BooleanLiteralNode;
 class StringLiteralNode;
 class ListNode;
 class ListElementNode;
+class MapNode;
+class MapElementNode;
 class IdentifierNode;
 class AssignementNode;
 class LogicalExpressionNode;

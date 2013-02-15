@@ -36,6 +36,7 @@
 %token LSQUARE_BRACKET
 %token RSQUARE_BRACKET
 %token COMMA
+%token COLON
 %token AND
 %token OR
 %token NOT
@@ -90,6 +91,7 @@ protected:
           ICI::ExpressionNode* Expression;
           ICI::LogicalExpressionNode* LogicalExpression;
           ICI::ListElementNode* ListElement;
+          ICI::MapElementNode* MapElement;
           ICI::OperatorNode*    Operator;
           const QString* str;
     };
@@ -446,7 +448,51 @@ case $rule_number: {
 }
 ./
 
-Expression: Identifier;
+Expression : Map ;
+Map : LBRACKET RBRACKET ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::MapNode> ();
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
+Map : LBRACKET MapParameters RBRACKET ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::MapNode> (ICI::finish(sym(2).MapElement));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
+    break;
+}
+./
+Map : LBRACKET MapParameters COMMA RBRACKET ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::MapNode> (ICI::finish(sym(2).MapElement));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
+    break;
+}
+./
+
+MapParameters: Identifier COLON Expression ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::MapElementNode> (sym(1).Identifier, sym(3).Expression);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
+    break;
+}
+./
+
+MapParameters: MapParameters COMMA Identifier COLON Expression ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::MapElementNode> (sym(1).MapElement, sym(3).Identifier, sym(5).Expression);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
+    break;
+}
+./
+
+Expression: Identifier ;
 
 Identifier: IdentifierPart ;
 /.

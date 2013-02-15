@@ -46,6 +46,7 @@ static QByteArray stringbuffer;
 "]" { return TOKEN_RSQUARE_BRACKET; }
 "." { return TOKEN_DOT; }
 "," { return TOKEN_COMMA; }
+":" { return TOKEN_COLON; }
 "and" { return TOKEN_AND; }
 "or" { return TOKEN_OR; }
 "!" { return TOKEN_NOT; }

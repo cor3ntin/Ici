@@ -33,6 +33,10 @@ Language specifications
     list = ["hello", 42, string]  #refer to other variables
     list += "foo" #list can be extended
     list -= "foo" #remove something from a list
+
+    #maps
+    map = {}
+    map = {foo:"bar", bar:{"foo}}
     
     #that's a function. you can create your own using the c++ api
     test = contains(list, 42);

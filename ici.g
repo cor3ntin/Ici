@@ -431,6 +431,14 @@ case $rule_number: {
     break;
 }
 ./
+List : LSQUARE_BRACKET ListParameters COMMA RSQUARE_BRACKET ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::ListNode> (ICI::finish(sym(2).ListElement));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
 ListParameters: Expression ;
 /.
 case $rule_number: {

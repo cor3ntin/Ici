@@ -74,7 +74,7 @@ static QByteArray stringbuffer;
 
 [0-9]+ { yylval.dval = QByteArray(yytext).toDouble(); return TOKEN_DIGIT; }
 [0-9]+\.[0-9]+ { yylval.dval = QByteArray(yytext).toDouble(); return TOKEN_DIGIT; }
-[a-zA-Z_]+    { yylval.str = storeString(yytext) ; return TOKEN_IDENT; }
+[a-zA-Z_][a-zA-Z_0-9]*    { yylval.str = storeString(yytext) ; return TOKEN_IDENT; }
 
 #.* {/* skip */}
 [\t ] {/* skip */}

@@ -320,7 +320,7 @@ case $rule_number: {
 ./
 
 
-LogicalExpression: LPAREN Expression RPAREN ;
+Expression: LPAREN Expression RPAREN ;
 /.
 case $rule_number: {
     sym(1).Node = sym(2).Node;

@@ -453,6 +453,14 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
     ICISettingsContext ctx;
     ctx.d->ctx = this;
     ctx.d->args = parameters;
+    ICI::ListElementNode* elem = node->parameters;
+    while(elem){
+        if(elem->value->type == ICI::Node::Type_Identifier )
+            ctx.d->keys.append(static_cast<ICI::IdentifierNode*>(elem->value)->name);
+        else
+            ctx.d->keys.append(QString());
+        elem = elem->next;
+   }
     result = it.value()(&ctx);
     return !error;
 }
@@ -534,4 +542,8 @@ void ICISettingsContext::setValue(const QString & key, const QVariant & defaultV
 
 const QVariantList & ICISettingsContext::args() const{
     return d->args;
+}
+
+const QStringList & ICISettingsContext::keys() const {
+    return d->keys;
 }

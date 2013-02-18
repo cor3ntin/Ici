@@ -18,6 +18,7 @@
 
 #include <QObject>
 #include <QVariantMap>
+#include <QStringList>
 
 class ICISettingsPrivate;
 class ICISettingsContextPrivate;
@@ -29,6 +30,7 @@ public:
     bool exists(const QString & key) const;
     void setValue(const QString & key, const QVariant & defaultValue);
     const QVariantList & args() const;
+    const QStringList & keys() const;
 private:
     friend class ICISettingsPrivate;
     ICISettingsContext();

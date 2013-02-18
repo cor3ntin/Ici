@@ -27,6 +27,7 @@ class ICISettingsContextPrivate{
 public:
     ICISettingsPrivate* ctx;
     QVariantList args;
+    QStringList keys;
 };
 
 class ICISettingsPrivate{

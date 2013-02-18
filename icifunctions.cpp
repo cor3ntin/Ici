@@ -54,4 +54,34 @@ QVariant equals(ICISettingsContext* ctx){
     return true;
 }
 
+QVariant extend(ICISettingsContext* ctx){
+    if(ctx->args().size() < 2){
+        ctx->setErrorMessage(QString("extend expects at least 2 arguments"));
+        return false;
+    }
+    if(ctx->keys().at(0).isEmpty()){
+        ctx->setErrorMessage(QString("extend expects an identifier as first parameter"));
+        return false;
+    }
+    if(!ctx->args().at(0).canConvert(QVariant::List)){
+        ctx->setErrorMessage(QString("extend expects a list as first parameter"));
+        return false;
+    }
+    QVariantList lst = ctx->args().at(0).toList();
+    for(int i = 1; i < ctx->args().size(); ++i){
+        QVariant other = ctx->args().at(i);
+        if(other.canConvert(QVariant::List)){
+            QVariantList other_list = other.toList();
+            Q_FOREACH(const QVariant & item, other_list){
+                lst.append(item);
+            }
+        }
+        else {
+            lst.append(other);
+        }
+        ctx->setValue(ctx->keys().at(0), lst);
+    }
+    return true;
+}
+
 }

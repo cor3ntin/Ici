@@ -230,6 +230,7 @@ ICISettingsPrivate::ICISettingsPrivate():
 
     functions.insert("contains", ICI::contains);
     functions.insert("equals", ICI::equals);
+    functions.insert("extend", ICI::extend);
 }
 
 ICISettingsPrivate::~ICISettingsPrivate(){

@@ -24,6 +24,7 @@ namespace ICI{
 
 QVariant contains(ICISettingsContext* ctx);
 QVariant equals(ICISettingsContext* ctx);
+QVariant extend(ICISettingsContext* ctx);
 
 }
 

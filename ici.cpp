@@ -226,7 +226,7 @@ bool ICISettings::evaluate(){
 
 
 ICISettingsPrivate::ICISettingsPrivate():
-    error(false), ast(0){
+    error(false), ast(0), currentNode(0){
 
     functions.insert("contains", ICI::contains);
     functions.insert("equals", ICI::equals);
@@ -249,6 +249,7 @@ void ICISettingsPrivate::parse(const  QByteArray & data, const QString & fileNam
 }
 
 void ICISettingsPrivate::evaluate(){
+    currentNode = ast;
     if(!ast || !evaluate(ast->nodes)){
         error = true;
     }
@@ -256,6 +257,7 @@ void ICISettingsPrivate::evaluate(){
 
 bool ICISettingsPrivate::evaluate(ICI::StatementListNode* node){
     while(node){
+        currentNode = node;
         if(!evaluate(node->node, node))
             return false;
         node = node->next;
@@ -266,6 +268,7 @@ bool ICISettingsPrivate::evaluate(ICI::StatementListNode* node){
 bool ICISettingsPrivate::evaluate(ICI::StatementNode* node, ICI::StatementListNode* parent){
     if(!node)
         return true;
+    currentNode = node;
     switch(node->type){
         case ICI::Node::Type_Assignement:
            return evaluate(static_cast<ICI::AssignementNode*>(node));
@@ -291,6 +294,7 @@ bool ICISettingsPrivate::evaluate(ICI::StatementNode* node, ICI::StatementListNo
 }
 
 bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::StatementListNode* parent){
+    currentNode = node;
     if(node->executed)
         return true;
     node->executed = true;
@@ -318,7 +322,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
             return false;
         }
         QByteArray data = f.readAll();
-        ICIParser parser(data);
+        ICIParser parser(data, filepath);
         if(!parser.parse()){
             errorString = QString("Can not parse file %1 : %2").arg(path, parser.errorString());
             return false;
@@ -337,6 +341,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
 bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
     if(!node)
         return true;
+    currentNode = node;
     QVariant value;
     if(!evaluate(node->value, value))
         return false;
@@ -373,11 +378,13 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
 }
 
 bool ICISettingsPrivate::evaluate(ICI::UnsetStatementNode* node){
+    currentNode = node;
     unset(node->identifier->keys(), context);
     return true;
 }
 
 bool ICISettingsPrivate::evaluate(ICI::ExpressionNode* node, QVariant & value){
+    currentNode = node;
     switch(node->type){
        case ICI::Node::Type_NumericLiteral:
            value = static_cast<ICI::NumericLiteralNode*>(node)->value;
@@ -418,6 +425,7 @@ bool ICISettingsPrivate::evaluate(ICI::ExpressionNode* node, QVariant & value){
 }
 
 bool ICISettingsPrivate::evaluate(ICI::ListElementNode* elem, QVariantList &values){
+    currentNode = elem;
     while(elem){
        QVariant value;
        if(!evaluate(elem->value, value))
@@ -429,6 +437,7 @@ bool ICISettingsPrivate::evaluate(ICI::ListElementNode* elem, QVariantList &valu
 }
 
 bool ICISettingsPrivate::evaluate(ICI::MapElementNode* elem, QVariantMap &values) {
+    currentNode = elem;
     while(elem){
        QVariant value;
        if(!evaluate(elem->value, value))
@@ -440,6 +449,7 @@ bool ICISettingsPrivate::evaluate(ICI::MapElementNode* elem, QVariantMap &values
 }
 
 bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & result){
+    currentNode = node;
     if(!node)
         return false;
     QHash<QString, ICISettings::IciFunction>::const_iterator it = functions.find(node->name);
@@ -467,6 +477,7 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
 }
 
 bool ICISettingsPrivate::evaluate(ICI::IfStatementNode* node){
+    currentNode = node;
     bool istrue = false;
     if(!evaluate(node->condition, istrue))
         return false;
@@ -474,6 +485,7 @@ bool ICISettingsPrivate::evaluate(ICI::IfStatementNode* node){
 }
 
 bool ICISettingsPrivate::evaluate(ICI::LogicalExpressionNode* node, bool & istrue){
+    currentNode = node;
     QVariant value;
     if(!evaluate(node->condition, value)){
         return false;
@@ -504,11 +516,30 @@ bool ICISettingsPrivate::evaluate(ICI::LogicalExpressionNode* node, bool & istru
 
 
 bool ICISettingsPrivate::hasKey(const QString & key) const{
-    return contains(key.split('.'), context);
+    return hasKey(key.split('.'));
+}
+
+bool ICISettingsPrivate::hasKey(const QStringList & key) const {
+    if (contains(key, context))
+        return true;
+    if(key.size() == 1) {
+        if(key.at(0) == "PWD")
+            return true;
+    }
+     return false;
+}
+
+QVariant ICISettingsPrivate::value(const QStringList & keys, const QVariant & defaultValue) const {
+    QVariant value = ::value(keys, context, defaultValue);
+    if(value.isNull() && keys.size() == 1){
+        if(keys.at(0) == "PWD" && currentNode)
+            value = QFileInfo(currentNode->file).absolutePath();
+    }
+    return value;
 }
 
 QVariant ICISettingsPrivate::value(const QString & key, const QVariant & defaultValue) const{
-    return ::value(key.split('.'), context, defaultValue);
+    return value(key.split('.'), defaultValue);
 }
 
 void ICISettingsPrivate::setValue(const QString & key, const QVariant & value){

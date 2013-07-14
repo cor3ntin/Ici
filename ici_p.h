@@ -41,6 +41,7 @@ public:
     ICI::RootNode* ast;
     QVariantMap context;
     QHash<QString, ICISettings::IciFunction> functions;
+    ICI::Node* currentNode;
 
 
     void evaluate();
@@ -59,7 +60,9 @@ public:
 
     QString replace_in_string(QString string, const QVariantMap & context);
     bool hasKey(const QString & key) const;
+    bool hasKey(const QStringList & key) const;
     QVariant value(const QString & key, const QVariant & defaultValue) const;
+    QVariant value(const QStringList & keys, const QVariant & defaultValue) const;
     void setValue(const QString & key, const QVariant & value);
 };
 

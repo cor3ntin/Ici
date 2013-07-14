@@ -207,6 +207,24 @@ QVariantMap ICISettings::values() const{
     return d->context;
 }
 
+void expand_map(QStringList & keys, const QString & k, const QVariant & v){
+    if(v.canConvert(QVariant::Map)){
+        QVariantMap map = v.toMap();
+        for(QVariantMap::iterator it = map.begin(); it != map.end(); ++it){
+            expand_map(keys, k.isEmpty() ? it.key() : k +"." + it.key(), it.value());
+        }
+    }
+    else if(!k.isEmpty()){
+        keys.append(k);
+    }
+}
+
+QStringList ICISettings::keys() const {
+    QStringList lst;
+    expand_map(lst, QString(), values());
+    return lst;
+}
+
 bool ICISettings::contains(const QString & key) const{
     return d->hasKey(key);
 }

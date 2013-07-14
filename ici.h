@@ -57,6 +57,8 @@ public:
     QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
     QVariantMap values() const;
 
+    QStringList keys() const;
+
     bool contains(const QString & key) const;
 
     bool createFunction(const QString & name, IciFunction);

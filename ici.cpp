@@ -498,7 +498,7 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
     ICI::ListElementNode* elem = node->parameters;
     while(elem){
         if(elem->value->type == ICI::Node::Type_Identifier )
-            ctx.d->keys.append(static_cast<ICI::IdentifierNode*>(elem->value)->name);
+            ctx.d->keys.append(static_cast<ICI::IdentifierNode*>(elem->value)->keys().join("."));
         else
             ctx.d->keys.append(QString());
         elem = elem->next;

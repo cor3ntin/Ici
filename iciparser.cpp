@@ -1,5 +1,5 @@
 
-#line 144 "ici.g"
+#line 145 "ici.g"
 
 /****************************************************************************
 **
@@ -85,7 +85,7 @@ bool ICIParser::parse()
 
           switch (r) {
 
-#line 231 "ici.g"
+#line 232 "ici.g"
 
 case 0: {
   sym(1).Node = ICI::makeAstNode<ICI::RootNode> (ICI::finish(sym(1).StatementList));
@@ -93,39 +93,39 @@ case 0: {
   m_ast = static_cast<ICI::RootNode*>(sym(1).Node);
 } break;
 
-#line 240 "ici.g"
+#line 241 "ici.g"
 
 case 1: {
   sym(1).Node = ICI::makeAstNode<ICI::StatementListNode> (sym(1).StatementList, sym(2).Statement);
   ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
 } break;
 
-#line 247 "ici.g"
+#line 248 "ici.g"
 
 case 2: {
   sym(1).Node = ICI::makeAstNode<ICI::StatementListNode> (sym(1).Statement);
   ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
 } break;
 
-#line 255 "ici.g"
+#line 256 "ici.g"
 
 case 3: {
   sym(1).Node =  ICI::finish(sym(2).StatementList);
 } break;
 
-#line 261 "ici.g"
+#line 262 "ici.g"
 
 case 4: {
   sym(1).Node = ICI::finish(ICI::makeAstNode<ICI::StatementListNode> ());
 } break;
 
-#line 267 "ici.g"
+#line 268 "ici.g"
 
 case 5: {
   sym(1).Node = ICI::finish(ICI::makeAstNode<ICI::StatementListNode> (sym(1).Statement));
 } break;
 
-#line 279 "ici.g"
+#line 280 "ici.g"
 
 case 10: {
 sym(1).Node = ICI::makeAstNode<ICI::FunctionCallStatementNode>(sym(1).FunctionCall);
@@ -133,7 +133,7 @@ sym(1).Node = ICI::makeAstNode<ICI::FunctionCallStatementNode>(sym(1).FunctionCa
     break;
 }
 
-#line 287 "ici.g"
+#line 288 "ici.g"
 
 case 11: {
     sym(1).Node = ICI::makeAstNode<ICI::IncludeStatementNode>(*(yylval.str));
@@ -141,7 +141,7 @@ case 11: {
     break;
 }
 
-#line 296 "ici.g"
+#line 297 "ici.g"
 
 case 12: {
     sym(1).Node = ICI::makeAstNode<ICI::UnsetStatementNode>(sym(2).Identifier);
@@ -149,7 +149,7 @@ case 12: {
     break;
 }
 
-#line 305 "ici.g"
+#line 306 "ici.g"
 
 case 13: {
     sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).LogicalExpression,
@@ -158,7 +158,7 @@ case 13: {
     break;
 }
 
-#line 314 "ici.g"
+#line 315 "ici.g"
 
 case 14: {
     sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).LogicalExpression, sym(3).StatementList);
@@ -166,7 +166,7 @@ case 14: {
     break;
 }
 
-#line 324 "ici.g"
+#line 325 "ici.g"
 
 case 15: {
     sym(1).Node = sym(2).Node;
@@ -174,7 +174,7 @@ case 15: {
     break;
 }
 
-#line 332 "ici.g"
+#line 333 "ici.g"
 
 case 16: {
     sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(3).LogicalExpression, ICI::Node::AndOperator);
@@ -182,7 +182,7 @@ case 16: {
     break;
 }
 
-#line 340 "ici.g"
+#line 341 "ici.g"
 
 case 17: {
     sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(3).LogicalExpression, ICI::Node::OrOperator);
@@ -190,7 +190,7 @@ case 17: {
     break;
 }
 
-#line 348 "ici.g"
+#line 349 "ici.g"
 
 case 18: {
     sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(2).Expression, (ICI::LogicalExpressionNode*)0, ICI::Node::NotOperator);
@@ -198,7 +198,7 @@ case 18: {
     break;
 }
 
-#line 356 "ici.g"
+#line 357 "ici.g"
 
 case 19: {
     sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression);
@@ -206,7 +206,7 @@ case 19: {
     break;
 }
 
-#line 367 "ici.g"
+#line 368 "ici.g"
 
 case 21: {
     sym(1).Node = ICI::makeAstNode<ICI::FunctionCallNode> (*(yylval.str));
@@ -214,7 +214,7 @@ case 21: {
     break;
 }
 
-#line 375 "ici.g"
+#line 376 "ici.g"
 
 case 22: {
     sym(1).Node = ICI::makeAstNode<ICI::FunctionCallNode> (*(sym(1).str), ICI::finish(sym(3).ListElement));
@@ -222,7 +222,7 @@ case 22: {
     break;
 }
 
-#line 384 "ici.g"
+#line 385 "ici.g"
 
 case 23: {
     sym(1).Node = ICI::makeAstNode<ICI::OperatorNode> (ICI::Node::AssignementOperator);
@@ -230,7 +230,7 @@ case 23: {
     break;
 }
 
-#line 392 "ici.g"
+#line 393 "ici.g"
 
 case 24: {
     sym(1).Node = ICI::makeAstNode<ICI::OperatorNode> (ICI::Node::AssignementAdditionOperator);
@@ -238,7 +238,7 @@ case 24: {
     break;
 }
 
-#line 400 "ici.g"
+#line 401 "ici.g"
 
 case 25: {
     sym(1).Node = ICI::makeAstNode<ICI::OperatorNode> (ICI::Node::AssignementSubstractionOperator);
@@ -246,31 +246,31 @@ case 25: {
     break;
 }
 
-#line 409 "ici.g"
+#line 410 "ici.g"
 
 case 26: {
-    sym(1).Node = ICI::makeAstNode<ICI::AssignementNode> (sym(1).Identifier, sym(2).Operator, sym(3).Expression);
+    sym(1).Node = ICI::makeAstNode<ICI::OperatorNode> (ICI::Node::AssignementUniqueAdditionOperator);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
 #line 419 "ici.g"
 
-case 28: {
+case 27: {
+    sym(1).Node = ICI::makeAstNode<ICI::AssignementNode> (sym(1).Identifier, sym(2).Operator, sym(3).Expression);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+
+#line 429 "ici.g"
+
+case 29: {
     sym(1).Node = ICI::makeAstNode<ICI::ListNode> ();
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 427 "ici.g"
-
-case 29: {
-    sym(1).Node = ICI::makeAstNode<ICI::ListNode> (ICI::finish(sym(2).ListElement));
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
-    break;
-}
-
-#line 435 "ici.g"
+#line 437 "ici.g"
 
 case 30: {
     sym(1).Node = ICI::makeAstNode<ICI::ListNode> (ICI::finish(sym(2).ListElement));
@@ -278,39 +278,39 @@ case 30: {
     break;
 }
 
-#line 443 "ici.g"
+#line 445 "ici.g"
 
 case 31: {
+    sym(1).Node = ICI::makeAstNode<ICI::ListNode> (ICI::finish(sym(2).ListElement));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+
+#line 453 "ici.g"
+
+case 32: {
     sym(1).Node = ICI::makeAstNode<ICI::ListElementNode> (sym(1).Expression);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 451 "ici.g"
+#line 461 "ici.g"
 
-case 32: {
+case 33: {
     sym(1).Node = ICI::makeAstNode<ICI::ListElementNode> (sym(1).ListElement, sym(3).Expression);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
 
-#line 461 "ici.g"
+#line 471 "ici.g"
 
-case 34: {
+case 35: {
     sym(1).Node = ICI::makeAstNode<ICI::MapNode> ();
     ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
     break;
 }
 
-#line 469 "ici.g"
-
-case 35: {
-    sym(1).Node = ICI::makeAstNode<ICI::MapNode> (ICI::finish(sym(2).MapElement));
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
-    break;
-}
-
-#line 477 "ici.g"
+#line 479 "ici.g"
 
 case 36: {
     sym(1).Node = ICI::makeAstNode<ICI::MapNode> (ICI::finish(sym(2).MapElement));
@@ -318,94 +318,102 @@ case 36: {
     break;
 }
 
-#line 486 "ici.g"
+#line 487 "ici.g"
 
 case 37: {
+    sym(1).Node = ICI::makeAstNode<ICI::MapNode> (ICI::finish(sym(2).MapElement));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
+    break;
+}
+
+#line 496 "ici.g"
+
+case 38: {
     sym(1).Node = ICI::makeAstNode<ICI::MapElementNode> (sym(1).Identifier, sym(3).Expression);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
 
-#line 495 "ici.g"
+#line 505 "ici.g"
 
-case 38: {
+case 39: {
     sym(1).Node = ICI::makeAstNode<ICI::MapElementNode> (sym(1).MapElement, sym(3).Identifier, sym(5).Expression);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
 
-#line 506 "ici.g"
+#line 516 "ici.g"
 
-case 40: {
+case 41: {
     sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (ICI::finish(sym(1).Identifier));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 515 "ici.g"
+#line 525 "ici.g"
 
-case 41: {
+case 42: {
     sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, *(sym(3).str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
     break;
 }
 
-#line 524 "ici.g"
+#line 534 "ici.g"
 
-case 42: {
+case 43: {
     sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (*(sym(1).str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 532 "ici.g"
+#line 542 "ici.g"
 
-case 43: {
+case 44: {
     sym(1).str = yylval.str;
     break;
 }
 
-#line 539 "ici.g"
+#line 549 "ici.g"
 
-case 44: {
+case 45: {
     sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (yylval.dval);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 547 "ici.g"
+#line 557 "ici.g"
 
-case 45: {
+case 46: {
     sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(yylval.str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 555 "ici.g"
+#line 565 "ici.g"
 
-case 46: {
+case 47: {
     sym(1).Node = ICI::makeAstNode<ICI::NullNode> ();
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 563 "ici.g"
+#line 573 "ici.g"
 
-case 47: {
+case 48: {
     sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (true);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 571 "ici.g"
+#line 581 "ici.g"
 
-case 48: {
+case 49: {
     sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (false);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 579 "ici.g"
+#line 589 "ici.g"
 
         } // switch
         m_stack [m_tos].state = nt_action (act, lhs [r] - TERMINAL_COUNT);

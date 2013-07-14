@@ -117,7 +117,7 @@ bool set_value(const QString & key, const QVariant & value, QVariantMap & contex
 }
 
 
-QString replace_in_string(QString string, const QVariantMap & context){
+QString ICISettingsPrivate::replace_in_string(QString string, const QVariantMap & context){
     bool escaped = false;
     int in = 0;
     int begin = 0;
@@ -137,8 +137,8 @@ QString replace_in_string(QString string, const QVariantMap & context){
             QString substring = replace_in_string(string.mid(begin+2, (i-begin)-2), context);
             QStringList keys = substring.split('.');
             bool replaced = false;
-            if(contains(keys, context)){
-                QVariant value = ::value(keys, context);
+            if(this->hasKey(keys)) {
+                QVariant value = this->value(keys, QVariant());
                 if(value.canConvert<QString>()){
                     QString replacement = value.toString();
                     string.replace(begin, (i - begin)+1, replacement);

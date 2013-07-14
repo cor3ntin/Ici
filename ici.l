@@ -38,6 +38,7 @@ static QByteArray stringbuffer;
 "="	{ return TOKEN_EQUAL; }
 "+=" { return TOKEN_PLUS_EQUAL; }
 "-=" { return TOKEN_MINUS_EQUAL; }
+"*=" { return TOKEN_STAR_EQUAL; }
 "("	{ return TOKEN_LPAREN; }
 ")"	{ return TOKEN_RPAREN; }
 "{" { return TOKEN_LBRACKET; }

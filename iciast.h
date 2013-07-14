@@ -53,6 +53,7 @@ struct Node
         AssignementOperator,
         AssignementAdditionOperator,
         AssignementSubstractionOperator,
+        AssignementUniqueAdditionOperator,
         AndOperator,
         OrOperator,
         NotOperator,

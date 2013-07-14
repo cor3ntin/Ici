@@ -29,6 +29,7 @@
 %token EQUAL
 %token PLUS_EQUAL
 %token MINUS_EQUAL
+%token STAR_EQUAL
 %token LPAREN
 %token RPAREN
 %token LBRACKET
@@ -400,6 +401,15 @@ AssignementOperator: MINUS_EQUAL ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::OperatorNode> (ICI::Node::AssignementSubstractionOperator);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+
+AssignementOperator: STAR_EQUAL ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::OperatorNode> (ICI::Node::AssignementUniqueAdditionOperator);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }

@@ -388,6 +388,19 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
                 return false;
             break;
         }
+        case ICI::Node::AssignementUniqueAdditionOperator:{
+            QVariant v = ::value(keys, context);
+            if(v.isNull())
+                set_value(keys, QVariantList() << value , context);
+            else if(v.canConvert<QVariantList>()){
+                QVariantList vlst = v.toList();
+                if(!vlst.contains(value)) {
+                    vlst.append(value);
+                    set_value(keys, vlst , context);
+                }
+            }
+            break;
+        }
         default:
             qDebug() << "not implemented";
             return false;

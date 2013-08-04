@@ -25,30 +25,25 @@ static QVariantList nullVariantList;
 static QVariantMap  nullVariantMap;
 static QVariant  nullVariant;
 
-QVariantList & asList(QVariant & v) {
+static QVariantList & asList(QVariant & v) {
     if(v.type() != QVariant::List)
         return nullVariantList;
     return *const_cast<QVariantList*>(static_cast<const QVariantList*>(v.constData()));
 }
-const QVariantList & asList(const QVariant & v) {
-    if(v.type() != QVariant::List)
-        return nullVariantList;
-    return *static_cast<const QVariantList*>(v.constData());
-}
 
-QVariantMap & asMap(QVariant & v) {
+static QVariantMap & asMap(QVariant & v) {
     if(v.type() != QVariant::Map)
         return nullVariantMap;
     return *const_cast<QVariantMap*>(static_cast<const QVariantMap*>(v.constData()));
 }
 
-const QVariantMap & asMap(const QVariant & v) {
+static const QVariantMap & asMap(const QVariant & v) {
     if(v.type() != QVariant::Map)
         return nullVariantMap;
     return *static_cast<const QVariantMap*>(v.constData());
 }
 
-QVariant & value_unsafe(const QStringList & keys, QVariantMap & context){
+static QVariant & value_unsafe(const QStringList & keys, QVariantMap & context){
     QVariantMap* map = &context;
     int i = 0;
     while(i < keys.size()) {
@@ -67,7 +62,7 @@ QVariant & value_unsafe(const QStringList & keys, QVariantMap & context){
     return nullVariant;
 }
 
-QVariant value(const QStringList & keys, const QVariantMap & context,
+static QVariant value(const QStringList & keys, const QVariantMap & context,
                const QVariant & defaultValue = QVariant()){
     const QVariantMap* map = &context;
     int i = 0;
@@ -87,7 +82,7 @@ QVariant value(const QStringList & keys, const QVariantMap & context,
     return defaultValue;
 }
 
-bool contains(const QStringList & keys, const QVariantMap & context){
+static bool contains(const QStringList & keys, const QVariantMap & context){
     if(keys.size() == 1){
         return context.contains(keys.first());
     }
@@ -107,7 +102,7 @@ bool contains(const QStringList & keys, const QVariantMap & context){
     return true;
 }
 
-bool unset(const QStringList & keys, QVariantMap & context){
+static bool unset(const QStringList & keys, QVariantMap & context){
     if(keys.size() == 1){
         return context.remove(keys.first()) > 0;
     }
@@ -130,11 +125,7 @@ bool unset(const QStringList & keys, QVariantMap & context){
     return false;
 }
 
-bool contains(const QString & key, const QVariantMap & context){
-    return contains(key.split('.'), context);
-}
-
-bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context){
+static bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context){
     if(keys.isEmpty())
         return true;
     QString key = keys.takeFirst();
@@ -156,7 +147,7 @@ bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context
     return true;
 }
 
-bool set_value(const QString & key, const QVariant & value, QVariantMap & context){
+static bool set_value(const QString & key, const QVariant & value, QVariantMap & context){
     QStringList keys = key.split('.');
     if(keys.size() == 1){
         context.insert(key, value);
@@ -256,7 +247,7 @@ QVariantMap ICISettings::values() const{
     return d->context;
 }
 
-void expand_map(QStringList & keys, const QString & k, const QVariant & v){
+static void expand_map(QStringList & keys, const QString & k, const QVariant & v){
     if(v.type() == QVariant::Map){
         const QVariantMap & map = asMap(v);
         for(QVariantMap::const_iterator it = map.begin(); it != map.end(); ++it){

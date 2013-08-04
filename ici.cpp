@@ -21,68 +21,116 @@
 #include <QFile>
 #include <QHash>
 
-QVariant value(QStringList keys, const QVariantMap & context, const QVariant & defaultValue = QVariant()){
-    if(keys.size() == 1){
-        return context.value(keys.first(), defaultValue);
-    }
-    QVariant variant = context;
-    do{
-        QString key = keys.takeFirst();
-        if(variant.canConvert<QVariantMap>()){
-            QVariantMap map = variant.toMap();
-            if(map.contains(key))
-                variant = map.value(key);
-            else
-                return defaultValue;
-        }
-        else
-            return defaultValue;
-    }while(!keys.isEmpty());
-    return variant;
+static QVariantList nullVariantList;
+static QVariantMap  nullVariantMap;
+static QVariant  nullVariant;
+
+QVariantList & asList(QVariant & v) {
+    if(v.type() != QVariant::List)
+        return nullVariantList;
+    return *const_cast<QVariantList*>(static_cast<const QVariantList*>(v.constData()));
+}
+const QVariantList & asList(const QVariant & v) {
+    if(v.type() != QVariant::List)
+        return nullVariantList;
+    return *static_cast<const QVariantList*>(v.constData());
 }
 
-bool contains(QStringList keys, const QVariantMap & context){
+QVariantMap & asMap(QVariant & v) {
+    if(v.type() != QVariant::Map)
+        return nullVariantMap;
+    return *const_cast<QVariantMap*>(static_cast<const QVariantMap*>(v.constData()));
+}
+
+const QVariantMap & asMap(const QVariant & v) {
+    if(v.type() != QVariant::Map)
+        return nullVariantMap;
+    return *static_cast<const QVariantMap*>(v.constData());
+}
+
+QVariant & value_unsafe(const QStringList & keys, QVariantMap & context){
+    QVariantMap* map = &context;
+    int i = 0;
+    while(i < keys.size()) {
+        const QString & key = keys.at(i++);
+        QVariantMap::iterator it = map->find(key);
+        if(it == map->constEnd())
+            return nullVariant;
+        QVariant & value = *it;
+        if(i >= keys.size())
+            return value;
+        if(value.type() == QVariant::Map)
+            map = &asMap(value);
+        else
+            return nullVariant;
+    }
+    return nullVariant;
+}
+
+QVariant value(const QStringList & keys, const QVariantMap & context,
+               const QVariant & defaultValue = QVariant()){
+    const QVariantMap* map = &context;
+    int i = 0;
+    while(i < keys.size()) {
+        const QString & key = keys.at(i++);
+        QVariantMap::const_iterator it = map->find(key);
+        if(it == map->constEnd())
+            return defaultValue;
+        const QVariant & value = *it;
+        if(i >= keys.size())
+            return value;
+        if(value.type() == QVariant::Map)
+            map = &asMap(value);
+        else
+            return defaultValue;
+    }
+    return defaultValue;
+}
+
+bool contains(const QStringList & keys, const QVariantMap & context){
     if(keys.size() == 1){
         return context.contains(keys.first());
     }
+    int i = 0;
     QVariant variant = context;
     do{
-        QString key = keys.takeFirst();
-        if(variant.canConvert<QVariantMap>()){
-            QVariantMap map = variant.toMap();
-            if(map.contains(key))
-                variant = map.value(key);
-            else
-                return false;
-        }
-        else
+        const QString & key = keys.at(i);
+        if(variant.type() != QVariant::Map)
             return false;
-    }while(!keys.isEmpty());
+
+        const QVariantMap & map = asMap(variant);
+        QVariantMap::const_iterator it = map.find(key);
+        if(it == map.constEnd())
+             return false;
+        variant = *it;
+    }while(++i < keys.size());
     return true;
 }
 
-bool unset(QStringList keys, QVariantMap & context){
+bool unset(const QStringList & keys, QVariantMap & context){
     if(keys.size() == 1){
         return context.remove(keys.first()) > 0;
     }
     QVariant variant = context;
-    QString key;
-    do{
-        key = keys.takeFirst();
-        if(variant.canConvert<QVariantMap>()){
-            QVariantMap map = variant.toMap();
-            if(map.contains(key))
-                variant = map.value(key);
-            else
-                return false;
+    int i = 0;
+    while(i < keys.size()) {
+        const QString & key = keys.at(i);
+        if(variant.type() == QVariant::Map){
+            QVariantMap & map = asMap(variant);
+            QVariantMap::iterator it = map.find(key);
+            if(it != map.constEnd()){
+                if(keys.isEmpty()) {
+                    map.erase(it);
+                    return true;
+                }
+                variant = *it;
+            }
         }
-        else
-            return false;
-    }while(!keys.isEmpty());
-    return context.remove(key) > 0;
+    }
+    return false;
 }
 
-bool contains(QString key, const QVariantMap & context){
+bool contains(const QString & key, const QVariantMap & context){
     return contains(key.split('.'), context);
 }
 
@@ -93,16 +141,17 @@ bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context
     if(keys.isEmpty()){
         context.insert(key, value);
     }
-    else if(!context.contains(key) || !context.value(key).canConvert<QVariantMap>()){
+    else if(!context.contains(key) || context.value(key).type() != QVariant::Map){
         QVariantMap subcontext;
         set_value(keys, value, subcontext);
         context.insert(key, subcontext);
     }
     else {
-        QVariantMap subcontext = context.value(key).toMap();
-        if(!set_value(keys, value,subcontext))
+        QVariant & subcontextV = context[key];
+        if(!subcontextV.type() == QVariant::Map) return false;
+        QVariantMap & subcontext = asMap(subcontextV);
+        if(!set_value(keys, value,  subcontext))
             return false;
-        context.insert(key, subcontext);
     }
     return true;
 }
@@ -208,9 +257,9 @@ QVariantMap ICISettings::values() const{
 }
 
 void expand_map(QStringList & keys, const QString & k, const QVariant & v){
-    if(v.canConvert(QVariant::Map)){
-        QVariantMap map = v.toMap();
-        for(QVariantMap::iterator it = map.begin(); it != map.end(); ++it){
+    if(v.type() == QVariant::Map){
+        const QVariantMap & map = asMap(v);
+        for(QVariantMap::const_iterator it = map.begin(); it != map.end(); ++it){
             expand_map(keys, k.isEmpty() ? it.key() : k +"." + it.key(), it.value());
         }
     }
@@ -255,7 +304,7 @@ ICISettingsPrivate::~ICISettingsPrivate(){
     delete ast;
 }
 
-void ICISettingsPrivate::parse(const  QByteArray & data, const QString & fileName){
+void ICISettingsPrivate::parse(const QByteArray & data, const QString & fileName){
     ICIParser parser(data, fileName);
     if(!parser.parse()){
         error = true;
@@ -369,34 +418,33 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
             set_value(keys, value, context);
             break;
         case ICI::Node::AssignementAdditionOperator:{
-            QVariant v = ::value(keys, context);
-            if(v.canConvert<QVariantList>()){
-                set_value(keys, v.toList() << value , context);
+             QVariant & v = ::value_unsafe(keys, context);
+            if(v.type() == QVariant::List){
+                asList(v).append(value);
             }
             else
                 return false;
             break;
         }
         case ICI::Node::AssignementSubstractionOperator:{
-            QVariant v = ::value(keys, context);
-            if(v.canConvert<QVariantList>()){
-                QVariantList lst = v.toList();
-                lst.removeAll(value);
-                set_value(keys, lst , context);
+             QVariant & v = ::value_unsafe(keys, context);
+            if(v.type() == QVariant::List){
+                asList(v).removeAll(value);
             }
             else
                 return false;
             break;
         }
         case ICI::Node::AssignementUniqueAdditionOperator:{
-            QVariant v = ::value(keys, context);
-            if(v.isNull())
+            QVariant & v = ::value_unsafe(keys, context);
+            if(v.isNull()) {
                 set_value(keys, QVariantList() << value , context);
-            else if(v.canConvert<QVariantList>()){
-                QVariantList vlst = v.toList();
-                if(!vlst.contains(value)) {
-                    vlst.append(value);
-                    set_value(keys, vlst , context);
+            }
+            else if(v.type() == QVariant::List){
+                QVariantList & lst = asList(v);
+                if(!lst.contains(value)) {
+                    qDebug() << value;
+                    lst.append(value);
                 }
             }
             break;

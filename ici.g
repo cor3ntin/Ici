@@ -203,8 +203,10 @@ bool ICIParser::parse()
 
       int act = t_action (state, yytoken);
 
-      if (act == ACCEPT_STATE)
+      if (act == ACCEPT_STATE) {
+        yy_delete_buffer(reinterpret_cast<YY_BUFFER_STATE>(m_lexdata));
         return true;
+    }
 
       else if (act > 0)
         {
@@ -596,7 +598,8 @@ case $rule_number: {
             break;
         }
     }
-   return false;
+    yy_delete_buffer(reinterpret_cast<YY_BUFFER_STATE>(m_lexdata));
+    return false;
 }
 
 QString ICIParser::errorString() const{

@@ -18,27 +18,27 @@
 
 namespace ICI{
 
-class Node;
-class RootNode;
-class StatementNode;
-class StatementListNode;
-class ExpressionNode;
-class NumericLiteralNode;
-class BooleanLiteralNode;
-class StringLiteralNode;
-class ListNode;
-class ListElementNode;
-class MapNode;
-class MapElementNode;
-class IdentifierNode;
-class AssignementNode;
-class LogicalExpressionNode;
-class OperatorNode;
-class IfStatementNode;
-class IncludeStatementNode;
-class UnsetStatementNode;
-class FunctionCallNode;
-class NullNode;
+struct Node;
+struct RootNode;
+struct StatementNode;
+struct StatementListNode;
+struct ExpressionNode;
+struct NumericLiteralNode;
+struct BooleanLiteralNode;
+struct StringLiteralNode;
+struct ListNode;
+struct ListElementNode;
+struct MapNode;
+struct MapElementNode;
+struct IdentifierNode;
+struct AssignementNode;
+struct LogicalExpressionNode;
+struct OperatorNode;
+struct IfStatementNode;
+struct IncludeStatementNode;
+struct UnsetStatementNode;
+struct FunctionCallNode;
+struct NullNode;
 
 }
 

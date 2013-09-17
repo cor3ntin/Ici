@@ -33,7 +33,7 @@ public:
     ICI::RootNode* ast() const;
 
 protected:
-    int nextToken();
+    int nextToken(void* scanner);
     union Value {
           double dval;
           ICI::Node* Node;

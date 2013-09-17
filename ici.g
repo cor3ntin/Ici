@@ -81,7 +81,7 @@ public:
     ICI::RootNode* ast() const;
 
 protected:
-    int nextToken();
+    int nextToken(void* scanner);
     union Value {
           double dval;
           ICI::Node* Node;
@@ -184,6 +184,10 @@ void ICIParser::reallocateStack()
 
 bool ICIParser::parse()
 {
+    void* scanner;
+    yylex_init(&scanner);
+    struct yyguts_t * yyg = (struct yyguts_t*)scanner;
+
     const int INITIAL_STATE = 0;
 
     int yytoken = -1;
@@ -191,20 +195,21 @@ bool ICIParser::parse()
 
     m_tos = 0;
     m_stack [++m_tos].state = INITIAL_STATE;
-    m_lexdata = yy_scan_string(m_data.constData());
+    m_lexdata = yy_scan_string(m_data.constData(), scanner);
 
     while (true)
     {
       const int state = m_stack [m_tos].state;
 
       if (yytoken == -1 && - TERMINAL_COUNT != action_index [state]){
-          yytoken = nextToken();
+          yytoken = nextToken(scanner);
       }
 
       int act = t_action (state, yytoken);
 
       if (act == ACCEPT_STATE) {
-        yy_delete_buffer(reinterpret_cast<YY_BUFFER_STATE>(m_lexdata));
+        yy_delete_buffer(reinterpret_cast<YY_BUFFER_STATE>(m_lexdata), scanner);
+        yylex_destroy(scanner);
         return true;
     }
 
@@ -598,7 +603,8 @@ case $rule_number: {
             break;
         }
     }
-    yy_delete_buffer(reinterpret_cast<YY_BUFFER_STATE>(m_lexdata));
+    yy_delete_buffer(reinterpret_cast<YY_BUFFER_STATE>(m_lexdata), scanner);
+    yylex_destroy(scanner);
     return false;
 }
 

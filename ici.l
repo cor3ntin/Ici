@@ -2,6 +2,7 @@
 %option nounput
 %option nounistd
 %option never-interactive
+%option reentrant
 
 
 %{
@@ -23,7 +24,7 @@
 #include "iciparser.h"
 #include <cstdlib>
 
-#define YY_DECL int ICIParser::nextToken()
+#define YY_DECL int ICIParser::nextToken(void* yyscanner)
 #define YY_USER_ACTION m_pos += yyleng;
 
 

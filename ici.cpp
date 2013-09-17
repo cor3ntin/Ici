@@ -43,7 +43,7 @@ static const QVariantMap & asMap(const QVariant & v) {
     return *static_cast<const QVariantMap*>(v.constData());
 }
 
-static QVariant & value_unsafe(const QStringList & keys, QVariantMap & context){
+QVariant & value_unsafe(const QStringList & keys, QVariantMap & context){
     QVariantMap* map = &context;
     int i = 0;
     while(i < keys.size()) {
@@ -62,7 +62,7 @@ static QVariant & value_unsafe(const QStringList & keys, QVariantMap & context){
     return nullVariant;
 }
 
-static QVariant value(const QStringList & keys, const QVariantMap & context,
+QVariant value(const QStringList & keys, const QVariantMap & context,
                const QVariant & defaultValue = QVariant()){
     const QVariantMap* map = &context;
     int i = 0;
@@ -82,7 +82,7 @@ static QVariant value(const QStringList & keys, const QVariantMap & context,
     return defaultValue;
 }
 
-static bool contains(const QStringList & keys, const QVariantMap & context){
+bool contains(const QStringList & keys, const QVariantMap & context){
     if(keys.size() == 1){
         return context.contains(keys.first());
     }
@@ -102,7 +102,7 @@ static bool contains(const QStringList & keys, const QVariantMap & context){
     return true;
 }
 
-static bool unset(const QStringList & keys, QVariantMap & context){
+bool unset(const QStringList & keys, QVariantMap & context){
     if(keys.size() == 1){
         return context.remove(keys.first()) > 0;
     }
@@ -125,7 +125,11 @@ static bool unset(const QStringList & keys, QVariantMap & context){
     return false;
 }
 
-static bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context){
+bool contains(const QString & key, const QVariantMap & context){
+    return contains(key.split('.'), context);
+}
+
+bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context){
     if(keys.isEmpty())
         return true;
     QString key = keys.takeFirst();
@@ -147,7 +151,7 @@ static bool set_value(QStringList & keys, const QVariant & value, QVariantMap & 
     return true;
 }
 
-static bool set_value(const QString & key, const QVariant & value, QVariantMap & context){
+bool set_value(const QString & key, const QVariant & value, QVariantMap & context){
     QStringList keys = key.split('.');
     if(keys.size() == 1){
         context.insert(key, value);
@@ -161,7 +165,6 @@ QString ICISettingsPrivate::replace_in_string(QString string, const QVariantMap 
     bool escaped = false;
     int in = 0;
     int begin = 0;
-    int end = 0;
     for(int i = 0; i < string.size(); i++){
         QChar c = string.at(i);
         if (c == '\\') {
@@ -173,22 +176,15 @@ QString ICISettingsPrivate::replace_in_string(QString string, const QVariantMap 
             in++;
         }
         else if( c == '}' && !escaped && --in == 0){
-            end = i;
             QString substring = replace_in_string(string.mid(begin+2, (i-begin)-2), context);
             QStringList keys = substring.split('.');
-            bool replaced = false;
             if(this->hasKey(keys)) {
                 QVariant value = this->value(keys, QVariant());
                 if(value.canConvert<QString>()){
                     QString replacement = value.toString();
                     string.replace(begin, (i - begin)+1, replacement);
-                    replaced = true;
                     i = (begin + replacement.size()) -2;
                 }
-            }
-            if(!replaced){
-                string.replace(begin, end-begin, substring);
-                i = begin + substring.size() -1;
             }
             in = false;
         }
@@ -203,21 +199,17 @@ QString ICISettingsPrivate::replace_in_string(QString string, const QVariantMap 
 ICISettings::ICISettings(const QByteArray &data, QObject* parent)
     :QObject(parent), d(new ICISettingsPrivate){
 
-    if(QFileInfo(data).exists()){
-        QFile f(data);
-        f.open(QIODevice::ReadOnly);
-        if(f.error()!=QFile::NoError){
-            d->error = true;
-            d->errorString = f.errorString();
-        }
-        else {
-            QByteArray content = f.readAll();
-            d->parse(content, QFileInfo(data).absoluteFilePath());
-        }
-    }
-    else{
-        d->parse(data);
-    }
+    d->parse(data);
+}
+
+ICISettings::ICISettings(const QString & file, QObject* parent)
+    :QObject(parent), d(new ICISettingsPrivate){
+    QFile f(file);
+    d->error = !f.open(QIODevice::ReadOnly);
+    if(d->error)
+        d->errorString = f.errorString();
+    QByteArray content = f.readAll();
+    d->parse(content, f.fileName());
 }
 
 ICISettings::~ICISettings(){
@@ -247,7 +239,7 @@ QVariantMap ICISettings::values() const{
     return d->context;
 }
 
-static void expand_map(QStringList & keys, const QString & k, const QVariant & v){
+void expand_map(QStringList & keys, const QString & k, const QVariant & v){
     if(v.type() == QVariant::Map){
         const QVariantMap & map = asMap(v);
         for(QVariantMap::const_iterator it = map.begin(); it != map.end(); ++it){
@@ -297,6 +289,8 @@ ICISettingsPrivate::~ICISettingsPrivate(){
 
 void ICISettingsPrivate::parse(const QByteArray & data, const QString & fileName){
     ICIParser parser(data, fileName);
+
+    error = false;
     if(!parser.parse()){
         error = true;
         errorString = parser.errorString();
@@ -308,6 +302,7 @@ void ICISettingsPrivate::parse(const QByteArray & data, const QString & fileName
 
 void ICISettingsPrivate::evaluate(){
     currentNode = ast;
+    error = false;
     if(!ast || !evaluate(ast->nodes)){
         error = true;
     }
@@ -356,34 +351,46 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
     if(node->executed)
         return true;
     node->executed = true;
-    if(node->file.isEmpty()){
+    bool required = true;
+    QString path = node->path;
+    if(path.at(0) == '?') {
+       required = false;
+       path = path.mid(1);
+    }
+    if(path.isEmpty()){
         errorString = "include() require a file";
         return false;
     }
     QDir dir(QFileInfo(node->file).absolutePath());
+    path = dir.absoluteFilePath(replace_in_string(path, context));
     QStringList paths;
-    QString path = dir.absoluteFilePath(replace_in_string(node->path, context));
-    if(QFileInfo(path).isFile())
-        paths << path;
-    else if(QFileInfo(path).isDir()){
+    if(QFileInfo(path).isDir()){
         Q_FOREACH(const QFileInfo & file, QDir(path).entryInfoList(QDir::NoDotAndDotDot|QDir::Files)){
             qDebug() << file.absoluteFilePath();
             paths << file.absoluteFilePath();
         }
     }
+    else if(!QFileInfo(path).isFile()) {
+        errorString = "include: File " + path + " does not exist";
+        return required ? false : true;
+    }
+    else {
+        paths << path;
+    }
+
     ICI::StatementListNode* next_node = parent->next;
     Q_FOREACH(const QString & filepath, paths){
 
         QFile f(filepath);
         if(!f.open(QIODevice::ReadOnly)){
             errorString = QString("Can not open file %1").arg(path);
-            return false;
+            return required ? false : true;
         }
         QByteArray data = f.readAll();
         ICIParser parser(data, filepath);
         if(!parser.parse()){
             errorString = QString("Can not parse file %1 : %2").arg(path, parser.errorString());
-            return false;
+            return required ? false : true;
         }
         ICI::StatementListNode* firstIncludedNode = parser.ast()->nodes;
         ICI::StatementListNode* currentIncludedNode = firstIncludedNode;
@@ -560,6 +567,8 @@ bool ICISettingsPrivate::evaluate(ICI::LogicalExpressionNode* node, bool & istru
     if(!evaluate(node->condition, value)){
         return false;
     }
+    if(value.isNull())
+        value = false;
     if(!value.canConvert<bool>()){
         errorString = QString("Error at line %1:%2 : boolean expression expected")
                 .arg(node->line).arg(node->pos);

@@ -43,7 +43,8 @@ class ICISettings : public QObject
 public:
     typedef QVariant (*IciFunction)(ICISettingsContext* ctx);
 
-    ICISettings(const QByteArray & data, QObject* parent = 0);
+    explicit ICISettings(const QString & file, QObject* parent = 0);
+    explicit ICISettings(const QByteArray & data, QObject* parent = 0);
     virtual ~ICISettings();
 
     bool hasError() const;

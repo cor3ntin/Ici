@@ -81,7 +81,7 @@ QVariant extend(ICISettingsContext* ctx){
         }
         ctx->setValue(ctx->keys().at(0), lst);
     }
-    return true;
+    return QVariant();
 }
 
 }

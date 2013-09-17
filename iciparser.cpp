@@ -347,7 +347,7 @@ case 39: {
 #line 518 "ici.g"
 
 case 41: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (ICI::finish(sym(1).Identifier));
+    sym(1).Node = ICI::finish(sym(1).Identifier);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }

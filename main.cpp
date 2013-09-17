@@ -18,15 +18,24 @@
 #include <QString>
 #include <QFile>
 #include <QDebug>
+#include <QTextCodec>
+#include <QCoreApplication>
 
-int main(int, char *argv[])
+int main(int argc, char *argv[])
 {
-    ICISettings settings(argv[1]);
+    QString path(argv[1]);
+
+
+    QCoreApplication app(argc, argv);
+
+    ICISettings settings(path);
     if(settings.hasError()){
        qDebug() << settings.errorString();
     }
-    settings.evaluate();
-    qDebug() << settings.errorString();
+    if(!settings.evaluate()) {
+        qDebug() << settings.errorString();
+        return 1;
+    }
     qDebug() << settings.values();
     return 0;
 }

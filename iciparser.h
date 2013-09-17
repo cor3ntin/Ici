@@ -66,8 +66,8 @@ protected:
     { return m_stack [m_tos + index - 1].loc; }
 
 
-    inline const QString* storeString(const QString & string){
-        return &*m_strings.insert(string);
+    inline const QString* storeString(const QByteArray & string){
+        return &*m_strings.insert(QString::fromUtf8(string));
     }
 
     ICI::RootNode* m_ast;

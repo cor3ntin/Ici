@@ -125,14 +125,6 @@ struct OperatorNode : public Node {
 };
 
 struct IdentifierNode : public ExpressionNode {
-    IdentifierNode(IdentifierNode* previous){
-        type = Type_Identifier;
-        this->next = previous->next;
-        previous->next = this;
-        this->name = previous->name;
-        previous->name.clear();
-    }
-
     IdentifierNode(IdentifierNode* previous, const QString & name){
         type = Type_Identifier;
         this->name = name;
@@ -159,7 +151,8 @@ struct IdentifierNode : public ExpressionNode {
     }
 
     virtual ~IdentifierNode(){
-        delete next;
+        if(next!=this)
+            delete next;
     }
 
     IdentifierNode* next;

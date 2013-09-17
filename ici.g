@@ -114,8 +114,8 @@ protected:
     { return m_stack [m_tos + index - 1].loc; }
 
 
-    inline const QString* storeString(const QString & string){
-        return &*m_strings.insert(string);
+    inline const QString* storeString(const QByteArray & string){
+        return &*m_strings.insert(QString::fromUtf8(string));
     }
 
     ICI::RootNode* m_ast;
@@ -517,7 +517,7 @@ Expression: Identifier ;
 Identifier: IdentifierPart ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (ICI::finish(sym(1).Identifier));
+    sym(1).Node = ICI::finish(sym(1).Identifier);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }

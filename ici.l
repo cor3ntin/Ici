@@ -72,8 +72,8 @@ static QByteArray stringbuffer;
 <simple_string>\'         { yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
 
 \"\"\"  { BEGIN raw_string; stringbuffer.clear(); }
-<raw_string>[\n]*     { if(!stringbuffer.isEmpty()) {stringbuffer.append(yytext);}}
-<raw_string>\n\"\"\"  { yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
+<raw_string>[\n]*     { ++m_line; if(!stringbuffer.isEmpty()) {stringbuffer.append(yytext);}}
+<raw_string>\n\"\"\"  { ++m_line; yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
 <raw_string>.*   { stringbuffer.append(yytext); }
 
 [0-9]+ { yylval.dval = QByteArray(yytext).toDouble(); return TOKEN_DIGIT; }

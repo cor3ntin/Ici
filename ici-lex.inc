@@ -1015,13 +1015,13 @@ case 34:
 /* rule 34 can match eol */
 YY_RULE_SETUP
 #line 75 "ici.l"
-{ if(!stringbuffer.isEmpty()) {stringbuffer.append(yytext);}}
+{ ++m_line; if(!stringbuffer.isEmpty()) {stringbuffer.append(yytext);}}
 	YY_BREAK
 case 35:
 /* rule 35 can match eol */
 YY_RULE_SETUP
 #line 76 "ici.l"
-{ yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
+{ ++m_line; yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP

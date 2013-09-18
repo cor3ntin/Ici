@@ -196,6 +196,15 @@ QString ICISettingsPrivate::replace_in_string(QString string, const QVariantMap 
 }
 
 
+QString formatError(const QString & message, ICI::Node* node){
+    return QString(QLatin1String("Error in %1 at line %2:%3 : %4"))
+            .arg(node->file)
+            .arg(node->line)
+            .arg(node->pos)
+            .arg(message);
+}
+
+
 ICISettings::ICISettings(const QByteArray &data, QObject* parent)
     :QObject(parent), d(new ICISettingsPrivate){
 
@@ -358,7 +367,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
        path = path.mid(1);
     }
     if(path.isEmpty()){
-        errorString = "include() require a file";
+        errorString = formatError("include() requires a file", node);
         return false;
     }
     QDir dir(QFileInfo(node->file).absolutePath());
@@ -371,7 +380,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
         }
     }
     else if(!QFileInfo(path).isFile()) {
-        errorString = "include: File " + path + " does not exist";
+        errorString = formatError("include: File " + path + " does not exist", node);
         return required ? false : true;
     }
     else {
@@ -420,8 +429,10 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
             if(v.type() == QVariant::List){
                 asList(v).append(value);
             }
-            else
+            else {
+                errorString = formatError(keys.join(".") +" is not a list", node);
                 return false;
+            }
             break;
         }
         case ICI::Node::AssignementSubstractionOperator:{
@@ -429,8 +440,10 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
             if(v.type() == QVariant::List){
                 asList(v).removeAll(value);
             }
-            else
+            else {
+                errorString = formatError(keys.join(".") +" is not a list", node);
                 return false;
+            }
             break;
         }
         case ICI::Node::AssignementUniqueAdditionOperator:{
@@ -441,7 +454,6 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
             else if(v.type() == QVariant::List){
                 QVariantList & lst = asList(v);
                 if(!lst.contains(value)) {
-                    qDebug() << value;
                     lst.append(value);
                 }
             }
@@ -531,8 +543,7 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
         return false;
     QHash<QString, ICISettings::IciFunction>::const_iterator it = functions.find(node->name);
     if(it == functions.end()){
-        errorString = QString("Error at line %1:%2 : function %3 undefined")
-                .arg(node->line).arg(node->pos).arg(node->name);
+        errorString = formatError(QString("function %1 undefined").arg(node->name), node);
         return false;
     }
     QVariantList parameters;
@@ -570,8 +581,7 @@ bool ICISettingsPrivate::evaluate(ICI::LogicalExpressionNode* node, bool & istru
     if(value.isNull())
         value = false;
     if(!value.canConvert<bool>()){
-        errorString = QString("Error at line %1:%2 : boolean expression expected")
-                .arg(node->line).arg(node->pos);
+        errorString = errorString = formatError(QLatin1String("Error at line %1:%2 : boolean expression expected"), node);
         return false;
     }
     istrue = value.toBool();
@@ -605,7 +615,7 @@ bool ICISettingsPrivate::hasKey(const QStringList & key) const {
         if(key.at(0) == "PWD")
             return true;
     }
-     return false;
+    return false;
 }
 
 QVariant ICISettingsPrivate::value(const QStringList & keys, const QVariant & defaultValue) const {

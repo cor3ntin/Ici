@@ -165,7 +165,7 @@ protected:
 #define ICI_UP_LOC(node, start, end) node->file = m_fileName; node->line = start.line; node->pos = start.pos;
 
 ICIParser::ICIParser(const QByteArray & data, const QString & fileName)
-:m_ast(0), m_tos(0), m_stack_size(0), m_data(data),m_fileName(fileName), m_line(0), m_pos(0){
+:m_ast(0), m_tos(0), m_stack_size(0), m_data(data),m_fileName(fileName), m_line(1), m_pos(0){
 }
 
 ICI::RootNode* ICIParser::ast() const{

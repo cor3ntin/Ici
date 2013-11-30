@@ -143,7 +143,7 @@ bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context
     }
     else {
         QVariant & subcontextV = context[key];
-        if(!subcontextV.type() == QVariant::Map) return false;
+        if(!(subcontextV.type() == QVariant::Map)) return false;
         QVariantMap & subcontext = asMap(subcontextV);
         if(!set_value(keys, value,  subcontext))
             return false;
@@ -213,12 +213,8 @@ ICISettings::ICISettings(const QByteArray &data, QObject* parent)
 
 ICISettings::ICISettings(const QString & file, QObject* parent)
     :QObject(parent), d(new ICISettingsPrivate){
-    QFile f(file);
-    d->error = !f.open(QIODevice::ReadOnly);
-    if(d->error)
-        d->errorString = f.errorString();
-    QByteArray content = f.readAll();
-    d->parse(content, f.fileName());
+    d->fileName = file;
+    reload();
 }
 
 ICISettings::~ICISettings(){
@@ -282,6 +278,23 @@ bool ICISettings::evaluate(){
     return !d->error;
 }
 
+bool ICISettings::reload() {
+    if(d->fileName.isEmpty())
+        return true;
+    QFile f(d->fileName);
+    if(!f.exists())
+        return true;
+    d->error = !f.open(QIODevice::ReadOnly);
+    if(d->error)
+        d->errorString = f.errorString();
+    QByteArray content = f.readAll();
+    d->parse(content, f.fileName());
+    return !d->error;
+}
+
+QStringList ICISettings::files() const {
+    return QStringList() << d->fileName << d->includedFiles;
+}
 
 
 ICISettingsPrivate::ICISettingsPrivate():
@@ -290,6 +303,8 @@ ICISettingsPrivate::ICISettingsPrivate():
     functions.insert("contains", ICI::contains);
     functions.insert("equals", ICI::equals);
     functions.insert("extend", ICI::extend);
+    functions.insert("has_function", ICI::has_function);
+    functions.insert("join", ICI::join);
 }
 
 ICISettingsPrivate::~ICISettingsPrivate(){
@@ -427,7 +442,7 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
             set_value(keys, value, context);
             break;
         case ICI::Node::AssignementAdditionOperator:{
-             QVariant & v = ::value_unsafe(keys, context);
+            QVariant & v = ::value_unsafe(keys, context);
             if(v.type() == QVariant::List){
                 asList(v).append(value);
             }
@@ -490,7 +505,7 @@ bool ICISettingsPrivate::evaluate(ICI::ExpressionNode* node, QVariant & value){
            value = replace_in_string(static_cast<ICI::StringLiteralNode*>(node)->value, context);
            return true;
        case ICI::Node::Type_Identifier:
-           value = ::value(static_cast<ICI::IdentifierNode*>(node)->keys(), context);
+           value = this->value(static_cast<ICI::IdentifierNode*>(node)->keys(), QVariant());
            return true;
        case ICI::Node::Type_FunctionCall:
            return evaluate(static_cast<ICI::FunctionCallNode*>(node), value);
@@ -621,11 +636,16 @@ bool ICISettingsPrivate::hasKey(const QStringList & key) const {
 }
 
 QVariant ICISettingsPrivate::value(const QStringList & keys, const QVariant & defaultValue) const {
-    QVariant value = ::value(keys, context, defaultValue);
-    if(value.isNull() && keys.size() == 1){
-        if(keys.at(0) == "PWD" && currentNode)
-            value = QFileInfo(currentNode->file).absolutePath();
+    //magic constant - evaluate first to make sure they are never overwritten
+    if(keys.size() == 1) {
+        if(keys.at(0) == "PWD")
+            if(currentNode) return QFileInfo(currentNode->file).absolutePath();
+
+        //When adding feature, create a flag there to maintain backward compatibility
+        if(keys.at(0) == "__HAS_FUNCTION")
+            return true;
     }
+    QVariant value = ::value(keys, context, defaultValue);
     return value;
 }
 
@@ -661,6 +681,22 @@ bool ICISettingsContext::exists(const QString & key) const{
 
 void ICISettingsContext::setValue(const QString & key, const QVariant & defaultValue){
     set_value(key, defaultValue, d->ctx->context);
+}
+
+bool ICISettingsContext::hasFunction(const QString & name) const {
+    return d->ctx->functions.contains(name);
+}
+
+QString ICISettingsContext::file() const {
+    if(d->ctx->currentNode)
+        return d->ctx->currentNode->file;
+    return QString::null;
+}
+
+int ICISettingsContext::line() const {
+    if(d->ctx->currentNode)
+        return d->ctx->currentNode->line;
+    return 0;
 }
 
 const QVariantList & ICISettingsContext::args() const{

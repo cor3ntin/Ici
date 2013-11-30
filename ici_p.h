@@ -37,9 +37,9 @@ public:
     void parse(const  QByteArray & data,const QString & fileName = QString());
 
     bool error;
-    QString errorString;
     QString fileName;
     QStringList includedFiles;
+    QString errorString;
     ICI::RootNode* ast;
     QVariantMap context;
     QHash<QString, ICISettings::IciFunction> functions;

@@ -31,6 +31,9 @@ public:
     void setValue(const QString & key, const QVariant & defaultValue);
     const QVariantList & args() const;
     const QStringList & keys() const;
+    bool hasFunction(const QString & name) const;
+    QString file() const;
+    int line() const;
 private:
     friend class ICISettingsPrivate;
     ICISettingsContext();
@@ -63,6 +66,10 @@ public:
     bool contains(const QString & key) const;
 
     bool createFunction(const QString & name, IciFunction);
+
+    bool reload();
+
+    QStringList files() const;
 
 private:
     ICISettingsPrivate* d;

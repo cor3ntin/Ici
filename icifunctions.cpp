@@ -17,9 +17,21 @@
 
 namespace ICI{
 
+QVariant has_function(ICISettingsContext* ctx){
+    if(ctx->args().size() == 0){
+        ctx->setErrorMessage(QString("has_function expect at least 1 argument"));
+        return false;
+    }
+    for(int i = 0; i < ctx->args().size(); ++i){
+        if(!ctx->hasFunction(ctx->args().at(i).toString()))
+            return false;
+    }
+    return true;
+}
+
 QVariant contains(ICISettingsContext* ctx){
     if(ctx->args().size() != 2){
-        ctx->setErrorMessage(QString("contains expect exactly 2 argument"));
+        ctx->setErrorMessage(QString("contains expect exactly 2 arguments"));
         return false;
     }
     QVariant a = ctx->args().at(0);
@@ -82,6 +94,16 @@ QVariant extend(ICISettingsContext* ctx){
         ctx->setValue(ctx->keys().at(0), lst);
     }
     return QVariant();
+}
+
+QVariant join(ICISettingsContext* ctx) {
+    if(ctx->args().size() < 2){
+        ctx->setErrorMessage(QString("join expects exactly 2 arguments"));
+        return QString();
+    }
+    QStringList list = ctx->args().at(0).toStringList();
+    QString sep = ctx->args().at(1).toString();
+    return list.join(sep);
 }
 
 }

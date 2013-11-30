@@ -25,6 +25,8 @@ namespace ICI{
 QVariant contains(ICISettingsContext* ctx);
 QVariant equals(ICISettingsContext* ctx);
 QVariant extend(ICISettingsContext* ctx);
+QVariant has_function(ICISettingsContext* ctx);
+QVariant join(ICISettingsContext* ctx);
 
 }
 

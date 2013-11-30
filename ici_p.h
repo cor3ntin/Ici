@@ -38,6 +38,8 @@ public:
 
     bool error;
     QString errorString;
+    QString fileName;
+    QStringList includedFiles;
     ICI::RootNode* ast;
     QVariantMap context;
     QHash<QString, ICISettings::IciFunction> functions;

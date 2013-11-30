@@ -310,6 +310,7 @@ void ICISettingsPrivate::parse(const QByteArray & data, const QString & fileName
 }
 
 void ICISettingsPrivate::evaluate(){
+    includedFiles.clear();
     currentNode = ast;
     error = false;
     if(!ast || !evaluate(ast->nodes)){
@@ -401,6 +402,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
             errorString = QString("Can not parse file %1 : %2").arg(path, parser.errorString());
             return required ? false : true;
         }
+        includedFiles.append(filepath);
         ICI::StatementListNode* firstIncludedNode = parser.ast()->nodes;
         ICI::StatementListNode* currentIncludedNode = firstIncludedNode;
         while(currentIncludedNode && currentIncludedNode->next)

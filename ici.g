@@ -115,8 +115,9 @@ protected:
 
 
     inline const QString* storeString(const QByteArray & string){
-        return &*m_strings.insert(QString::fromUtf8(string));
+        return &*m_strings.insert(unescape(string));
     }
+    QString unescape( const QByteArray & ba);
 
     ICI::RootNode* m_ast;
     int m_tos;
@@ -133,6 +134,7 @@ protected:
 
     int m_line, m_pos;
     QString m_errorString;
+
 };
 
 
@@ -163,6 +165,90 @@ protected:
 #include "iciast.h"
 
 #define ICI_UP_LOC(node, start, end) node->file = m_fileName; node->line = start.line; node->pos = start.pos;
+
+bool ishexnstring(const QString & string) {
+    for (int i = 0; i < string.length(); i++) {
+        if (isxdigit(string[i] == 0))
+            return false;
+    }
+    return true;
+}
+
+QString ICIParser::unescape( const QByteArray & ba) {
+    QString res;
+    QByteArray seg;
+    bool bs = false;
+    for (int i = 0, size = ba.size(); i < size; ++i) {
+        const char ch = ba[i];
+        if (!bs) {
+            if (ch == '\\')
+                bs = true;
+            else
+                seg += ch;
+        }
+        else {
+            bs = false;
+            switch (ch) {
+            case 'b':
+                seg += '\b';
+                break;
+            case 'f':
+                seg += '\f';
+                break;
+            case 'n':
+                seg += '\n';
+                break;
+            case 'r':
+                seg += '\r';
+                break;
+            case 't':
+                seg += '\t';
+                break;
+            case 'u':
+            {
+                res += QString::fromUtf8( seg );
+                seg.clear();
+
+                if (i > size - 5) {
+                    //error
+                    return QString();
+                }
+
+                const QString hex_digit1 = QString::fromUtf8( ba.mid( i + 1, 2 ));
+                const QString hex_digit2 = QString::fromUtf8( ba.mid( i + 3, 2 ));
+                i += 4;
+
+                if (!ishexnstring( hex_digit1 ) || !ishexnstring( hex_digit2 )) {
+                    qCritical() << "Not an hex string:" << hex_digit1 << hex_digit2;
+                    return QString();
+                }
+                bool hexOk;
+                const ushort hex_code1 = hex_digit1.toShort( &hexOk, 16 );
+                if (!hexOk) {
+                    qCritical() << "error converting hex value to short:" << hex_digit1;
+                    return QString();
+                }
+                const ushort hex_code2 = hex_digit2.toShort( &hexOk, 16 );
+                if (!hexOk) {
+                    qCritical() << "error converting hex value to short:" << hex_digit2;
+                    return QString();
+                }
+
+                res += QChar(hex_code2, hex_code1);
+                break;
+            }
+            case '\\':
+                seg  += '\\';
+                break;
+            default:
+                seg += ch;
+                break;
+            }
+        }
+    }
+    res += QString::fromUtf8( seg );
+    return res;
+}
 
 ICIParser::ICIParser(const QByteArray & data, const QString & fileName)
 :m_ast(0), m_tos(0), m_stack_size(0), m_data(data),m_fileName(fileName), m_line(1), m_pos(0){

@@ -20,6 +20,7 @@
 #include "iciast_fwd.h"
 #include <QString>
 #include <QStringList>
+#include <QDebug>
 
 namespace ICI{
 
@@ -151,6 +152,7 @@ struct IdentifierNode : public ExpressionNode {
     }
 
     virtual ~IdentifierNode(){
+        qDebug() << "delete";
         if(next!=this)
             delete next;
     }
@@ -177,6 +179,7 @@ struct AssignementNode : public StatementNode {
     }
 
     virtual ~AssignementNode(){
+        delete id;
         delete op;
         delete value;
     }

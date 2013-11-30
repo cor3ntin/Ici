@@ -67,8 +67,9 @@ protected:
 
 
     inline const QString* storeString(const QByteArray & string){
-        return &*m_strings.insert(QString::fromUtf8(string));
+        return &*m_strings.insert(unescape(string));
     }
+    QString unescape( const QByteArray & ba);
 
     ICI::RootNode* m_ast;
     int m_tos;
@@ -85,6 +86,7 @@ protected:
 
     int m_line, m_pos;
     QString m_errorString;
+
 };
 
 

@@ -28,6 +28,8 @@ int main(int argc, char *argv[])
 
     QCoreApplication app(argc, argv);
 
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+
     ICISettings settings(path);
     if(settings.hasError()){
        qDebug() << settings.errorString();
@@ -36,6 +38,6 @@ int main(int argc, char *argv[])
         qDebug() << settings.errorString();
         return 1;
     }
-    qDebug() << settings.values();
+    qDebug() << settings.values() << settings.value("test").toString();
     return 0;
 }

@@ -64,11 +64,13 @@ static QByteArray stringbuffer;
 \"  { BEGIN double_string; stringbuffer.clear(); }
 <double_string>[^\\"]*   { stringbuffer.append(yytext); }
 <double_string>\\[\\"]   { stringbuffer.append(yytext[1]); }
+<double_string>\\[bfnrtu] { stringbuffer.append(yytext); }
 <double_string>\"         { yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
 
 \'  { BEGIN simple_string; stringbuffer.clear(); }
 <simple_string>[^\\']*   { stringbuffer.append(yytext); }
 <simple_string>\\[\\']   { stringbuffer.append(yytext[1]); }
+<simple_string>\\[bfnrtu] { stringbuffer.append(yytext); }
 <simple_string>\'         { yylval.str = storeString(stringbuffer); BEGIN 0; return TOKEN_STRING; }
 
 \"\"\"  { BEGIN raw_string; stringbuffer.clear(); }

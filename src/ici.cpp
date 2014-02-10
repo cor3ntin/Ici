@@ -240,7 +240,7 @@ QVariant ICISettings::value(const QString & key, const QVariant & defaultValue) 
     return d->value(key,defaultValue);
 }
 
-QVariantMap ICISettings::values() const{
+QMap<QString, QVariant> ICISettings::values() const{
     return d->context;
 }
 

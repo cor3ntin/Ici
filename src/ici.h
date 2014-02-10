@@ -59,7 +59,7 @@ public:
     void setValue(const QString & key, const QVariant & defaultValue);
 
     QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
-    QVariantMap values() const;
+    QMap<QString, QVariant > values() const;
 
     QStringList keys() const;
 

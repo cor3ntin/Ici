@@ -22,8 +22,20 @@
 
 namespace ICI{
 
-QVariant contains(ICISettingsContext* ctx);
 QVariant equals(ICISettingsContext* ctx);
+QVariant lt(ICISettingsContext* ctx);
+QVariant gt(ICISettingsContext* ctx);
+QVariant lte(ICISettingsContext* ctx);
+QVariant gte(ICISettingsContext* ctx);
+
+QVariant min(ICISettingsContext* ctx);
+QVariant max(ICISettingsContext* ctx);
+
+QVariant sum(ICISettingsContext* ctx);
+QVariant mul(ICISettingsContext* ctx);
+QVariant div(ICISettingsContext* ctx);
+
+QVariant contains(ICISettingsContext* ctx);
 QVariant extend(ICISettingsContext* ctx);
 QVariant has_function(ICISettingsContext* ctx);
 QVariant join(ICISettingsContext* ctx);

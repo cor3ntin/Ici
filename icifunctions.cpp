@@ -14,6 +14,7 @@
 ****************************************************************************/
 
 #include "icifunctions.h"
+#include <functional>
 
 namespace ICI{
 
@@ -49,21 +50,6 @@ QVariant contains(ICISettingsContext* ctx){
             return true;
     }
     return false;
-}
-
-QVariant equals(ICISettingsContext* ctx){
-    if(ctx->args().size() < 2){
-        ctx->setErrorMessage(QString("equals expects at least 2 arguments"));
-        return false;
-    }
-    QVariant arg = ctx->args().at(0);
-    for(int i = 1; i < ctx->args().size(); ++i){
-        if(arg != ctx->args().at(i)){
-            return false;
-        }
-        arg = ctx->args().at(i);
-    }
-    return true;
 }
 
 QVariant extend(ICISettingsContext* ctx){
@@ -105,5 +91,167 @@ QVariant join(ICISettingsContext* ctx) {
     QString sep = ctx->args().at(1).toString();
     return list.join(sep);
 }
+
+
+#define SWITCH_ITEM_COMPARE(typeName, type, op) \
+case QMetaType::typeName: {return (a).value<type>() op (b).value<type>(); break;}
+
+
+
+#define __variant_comp(NAME, op)                     \
+bool NAME(const QVariant & a, const QVariant & b)    \
+{                                                    \
+    switch (b.type()) {                       \
+        SWITCH_ITEM_COMPARE(UInt, quint32, op) \
+        SWITCH_ITEM_COMPARE(Int,  qint32, op) \
+        SWITCH_ITEM_COMPARE(ULongLong,  quint64, op) \
+        SWITCH_ITEM_COMPARE(Long,  long, op)  \
+        SWITCH_ITEM_COMPARE(ULong,  unsigned long, op) \
+        SWITCH_ITEM_COMPARE(LongLong,  qint64, op)\
+        SWITCH_ITEM_COMPARE(QString,  QString, op)\
+        SWITCH_ITEM_COMPARE(QChar,  QChar, op)\
+        SWITCH_ITEM_COMPARE(Bool,  bool, op) \
+        SWITCH_ITEM_COMPARE(Char,  qint16, op) \
+        SWITCH_ITEM_COMPARE(UChar, quint8, op) \
+        SWITCH_ITEM_COMPARE(Double, double, op) \
+        SWITCH_ITEM_COMPARE(Float,  float, op) \
+        SWITCH_ITEM_COMPARE(Short,  qint16, op) \
+        SWITCH_ITEM_COMPARE(UShort,  quint16, op)  \
+        default: {return false; break;} \
+    } \
+    return false;\
+}
+
+#if (__GNUC__ == 4)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wswitch"
+#endif
+
+__variant_comp(_variant_equals, ==)
+__variant_comp(_variant_lt, <)
+__variant_comp(_variant_gt, >)
+__variant_comp(_variant_gte, >=)
+__variant_comp(_variant_lte, <=)
+
+#if (__GNUC__ == 4)
+#pragma GCC diagnostic pop
+#endif
+
+QVariant _compare_variants(ICISettingsContext* ctx, bool(*comp)(const QVariant & a, const QVariant & b)){
+    if(ctx->args().size() < 2){
+        ctx->setErrorMessage("Comparaison function takes at least 2 arguments");
+        return false;
+    }
+    QVariant arg = ctx->args().at(0);
+    for(int i = 1; i < ctx->args().size(); ++i){
+        if(!comp(arg,ctx->args().at(i))){
+            return false;
+        }
+        arg = ctx->args().at(i);
+    }
+    return true;
+}
+
+QVariant equals(ICISettingsContext* ctx) {
+    if(ctx->args().size() >= 2 && ctx->args().at(0).isNull()) {
+        for(int i = 1; i < ctx->args().size(); ++i){
+            if(!ctx->args().at(1).isNull())
+                return false;
+        }
+        return true;
+    }
+    return _compare_variants(ctx, _variant_equals);
+}
+
+QVariant lt(ICISettingsContext* ctx) {
+    return _compare_variants(ctx, _variant_lt);
+}
+
+QVariant lte(ICISettingsContext* ctx) {
+    return _compare_variants(ctx, _variant_lte);
+}
+
+QVariant gt(ICISettingsContext* ctx) {
+    return _compare_variants(ctx, _variant_gt);
+}
+
+QVariant gte(ICISettingsContext* ctx) {
+    return _compare_variants(ctx, _variant_gte);
+}
+
+QVariant max(ICISettingsContext* ctx) {
+    if(ctx->args().size() < 2){
+        ctx->setErrorMessage("Comparaison function takes at least 2 arguments");
+        return false;
+    }
+    QVariant arg = ctx->args().at(0);
+    for(int i = 1; i < ctx->args().size(); ++i){
+        if(_variant_gt(ctx->args().at(i), arg)){
+            arg = ctx->args().at(i);
+        }
+    }
+    return arg;
+}
+
+QVariant min(ICISettingsContext* ctx) {
+    if(ctx->args().size() < 2){
+        ctx->setErrorMessage("Comparaison function takes at least 2 arguments");
+        return false;
+    }
+    QVariant arg = ctx->args().at(0);
+    for(int i = 1; i < ctx->args().size(); ++i){
+        if(_variant_lt(ctx->args().at(i), arg)){
+            arg = ctx->args().at(i);
+        }
+    }
+    return arg;
+}
+
+QVariant sum(ICISettingsContext* ctx) {
+    if(ctx->args().size() < 2){
+        ctx->setErrorMessage("sum takes at least 2 arguments");
+        return QVariant();
+    }
+    double result = 0;
+    for(int i = 0; i < ctx->args().size(); ++i) {
+        if(ctx->args().at(i).canConvert(QVariant::Double))
+            result += ctx->args().at(i).toDouble();
+    }
+    return result;
+}
+
+QVariant mul(ICISettingsContext* ctx) {
+    if(ctx->args().size() < 2){
+        ctx->setErrorMessage("mul takes at least 2 arguments");
+        return false;
+    }
+    if(!ctx->args().at(0).canConvert(QVariant::Double)) {
+        ctx->setErrorMessage("NaN");
+        return QVariant();
+    }
+
+    double result = ctx->args().at(0).toDouble();
+    for(int i = 1; i < ctx->args().size(); ++i) {
+        if(ctx->args().at(i).canConvert(QVariant::Double))
+            result *= ctx->args().at(i).toDouble();
+    }
+    return result;
+}
+
+QVariant div(ICISettingsContext* ctx) {
+    if(ctx->args().size() !=2){
+        ctx->setErrorMessage("div takes 2 arguments");
+        return false;
+    }
+
+    if(!ctx->args().at(0).canConvert(QVariant::Double) || !ctx->args().at(1).canConvert(QVariant::Double)) {
+        ctx->setErrorMessage("NaN");
+        return QVariant();
+    }
+
+    return ctx->args().at(0).toDouble() / ctx->args().at(1).toDouble();
+}
+
+
 
 }

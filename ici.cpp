@@ -300,8 +300,23 @@ QStringList ICISettings::files() const {
 ICISettingsPrivate::ICISettingsPrivate():
     error(false), ast(0), currentNode(0){
 
-    functions.insert("contains", ICI::contains);
+
     functions.insert("equals", ICI::equals);
+    functions.insert("equal", ICI::equals);
+    functions.insert("eq", ICI::equals);
+    functions.insert("lt", ICI::lt);
+    functions.insert("lte", ICI::lte);
+    functions.insert("gt", ICI::gt);
+    functions.insert("gte", ICI::gte);
+
+    functions.insert("min", ICI::min);
+    functions.insert("max", ICI::max);
+
+    functions.insert("sum", ICI::sum);
+    functions.insert("mul", ICI::mul);
+    functions.insert("div", ICI::div);
+
+    functions.insert("contains", ICI::contains);
     functions.insert("extend", ICI::extend);
     functions.insert("has_function", ICI::has_function);
     functions.insert("join", ICI::join);
@@ -375,7 +390,6 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
     currentNode = node;
     if(node->executed)
         return true;
-    node->executed = true;
     bool required = true;
     QString path = node->path;
     if(path.at(0) == '?') {
@@ -407,16 +421,25 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
     Q_FOREACH(const QString & filepath, paths){
 
         QFile f(filepath);
-        if(!f.open(QIODevice::ReadOnly)){
+        if(!f.open(QIODevice::ReadOnly)) {
             errorString = QString("Can not open file %1").arg(path);
-            return required ? false : true;
+            if (required) {
+                error = true;
+                return false;
+            }
+            continue;
         }
         QByteArray data = f.readAll();
         ICIParser parser(data, filepath);
-        if(!parser.parse()){
+        if(!parser.parse()) {
             errorString = QString("Can not parse file %1 : %2").arg(path, parser.errorString());
-            return required ? false : true;
+            if(required) {
+                error = true;
+                return false;
+            }
+            continue;
         }
+
         includedFiles.append(filepath);
         ICI::StatementListNode* firstIncludedNode = parser.ast()->nodes;
         ICI::StatementListNode* currentIncludedNode = firstIncludedNode;
@@ -424,6 +447,9 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
             currentIncludedNode = currentIncludedNode->next;
         currentIncludedNode->next = next_node;
         next_node = firstIncludedNode;
+
+
+        node->executed = true;
     }
     parent->next = next_node;
     return true;

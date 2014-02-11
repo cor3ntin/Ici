@@ -452,59 +452,76 @@ case 42: {
 #line 627 "ici.g"
 
 case 43: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, *(yylval.str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+
+#line 636 "ici.g"
+
+case 44: {
     sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (*(sym(1).str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 635 "ici.g"
+#line 645 "ici.g"
 
-case 44: {
+case 45: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (*(yylval.str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+
+
+#line 654 "ici.g"
+
+case 46: {
     sym(1).str = yylval.str;
     break;
 }
 
-#line 642 "ici.g"
+#line 661 "ici.g"
 
-case 45: {
+case 47: {
     sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (yylval.dval);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 650 "ici.g"
+#line 670 "ici.g"
 
-case 46: {
+case 48: {
     sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(yylval.str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 658 "ici.g"
+#line 679 "ici.g"
 
-case 47: {
+case 49: {
     sym(1).Node = ICI::makeAstNode<ICI::NullNode> ();
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 666 "ici.g"
+#line 687 "ici.g"
 
-case 48: {
+case 50: {
     sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (true);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 674 "ici.g"
+#line 695 "ici.g"
 
-case 49: {
+case 51: {
     sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (false);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 682 "ici.g"
+#line 703 "ici.g"
 
         } // switch
         m_stack [m_tos].state = nt_action (act, lhs [r] - TERMINAL_COUNT);

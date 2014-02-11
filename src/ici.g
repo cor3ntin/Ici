@@ -623,6 +623,15 @@ case $rule_number: {
 }
 ./
 
+IdentifierPart: IdentifierPart DOT STRING ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, *(yylval.str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
+
 IdentifierPart: StoredIdent ;
 /.
 case $rule_number: {
@@ -630,6 +639,16 @@ case $rule_number: {
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
+./
+
+IdentifierPart: DOT STRING;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (*(yylval.str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+
 ./
 StoredIdent: IDENT ;
 /.
@@ -646,6 +665,7 @@ case $rule_number: {
     break;
 }
 ./
+
 Expression: STRING;
 /.
 case $rule_number: {
@@ -654,6 +674,7 @@ case $rule_number: {
     break;
 }
 ./
+
 Expression: NULL;
 /.
 case $rule_number: {

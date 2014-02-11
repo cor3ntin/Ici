@@ -45,6 +45,7 @@ struct Node
         Type_List,
         Type_Map,
         Type_Identifier,
+        Type_IdentifierString,
 
         Type_FunctionCall,
         Type_LogicalExpression
@@ -138,18 +139,6 @@ struct IdentifierNode : public ExpressionNode {
         this->next = this;
     }
 
-    QStringList keys() const {
-        QStringList k;
-        keys(k);
-        return k;
-    }
-
-    void keys(QStringList & k) const {
-        k << name;
-        if(next && next !=this)
-            next->keys(k);
-    }
-
     virtual ~IdentifierNode(){
         if(next!=this)
             delete next;
@@ -157,6 +146,15 @@ struct IdentifierNode : public ExpressionNode {
 
     IdentifierNode* next;
     QString name;
+};
+
+struct IdentifierStringNode : IdentifierNode {
+public:
+    IdentifierStringNode(const QString & name)
+        :IdentifierNode(name) {
+
+        type = Type_IdentifierString;
+    }
 };
 
 struct UnsetStatementNode : public StatementNode {

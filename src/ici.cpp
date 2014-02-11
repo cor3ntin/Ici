@@ -195,6 +195,19 @@ QString ICISettingsPrivate::replace_in_string(QString string, const QVariantMap 
     return string;
 }
 
+QStringList ICISettingsPrivate::identifier_keys(ICI::IdentifierNode* node, const QVariantMap & context) {
+    QStringList keys;
+    ICI::IdentifierNode* n = node;
+    while(n) {
+        if(n->type == ICI::Node::Type_Identifier)
+            keys << n->name;
+        else
+            keys << replace_in_string(n->name, context);
+        n = n->next;
+    }
+    return keys;
+}
+
 
 QString formatError(const QString & message, ICI::Node* node){
     return QString(QLatin1String("Error in %1 at line %2:%3 : %4"))
@@ -462,7 +475,7 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
     QVariant value;
     if(!evaluate(node->value, value))
         return false;
-    QStringList keys = node->id->keys();
+    QStringList keys = identifier_keys(node->id, this->context);
     switch(node->op->op){
         case ICI::Node::AssignementOperator:
             set_value(keys, value, context);
@@ -511,7 +524,7 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
 
 bool ICISettingsPrivate::evaluate(ICI::UnsetStatementNode* node){
     currentNode = node;
-    unset(node->identifier->keys(), context);
+    unset(identifier_keys(node->identifier, context), context);
     return true;
 }
 
@@ -531,7 +544,7 @@ bool ICISettingsPrivate::evaluate(ICI::ExpressionNode* node, QVariant & value){
            value = replace_in_string(static_cast<ICI::StringLiteralNode*>(node)->value, context);
            return true;
        case ICI::Node::Type_Identifier:
-           value = this->value(static_cast<ICI::IdentifierNode*>(node)->keys(), QVariant());
+           value = this->value(identifier_keys(static_cast<ICI::IdentifierNode*>(node), context), QVariant());
            return true;
        case ICI::Node::Type_FunctionCall:
            return evaluate(static_cast<ICI::FunctionCallNode*>(node), value);
@@ -574,7 +587,11 @@ bool ICISettingsPrivate::evaluate(ICI::MapElementNode* elem, QVariantMap &values
        QVariant value;
        if(!evaluate(elem->value, value))
            return false;
-       set_value(elem->key->name, value, values);
+       QString key;
+       if(elem->type == ICI::Node::Type_IdentifierString)
+           replace_in_string(elem->key->name, this->context);
+       else key = elem->key->name;
+       set_value(key, value, values);
        elem = elem->next;
    }
    return true;
@@ -598,7 +615,7 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
     ICI::ListElementNode* elem = node->parameters;
     while(elem){
         if(elem->value->type == ICI::Node::Type_Identifier )
-            ctx.d->keys.append(static_cast<ICI::IdentifierNode*>(elem->value)->keys().join("."));
+            ctx.d->keys.append(identifier_keys(static_cast<ICI::IdentifierNode*>(elem->value), context).join("."));
         else
             ctx.d->keys.append(QString());
         elem = elem->next;

@@ -31,6 +31,7 @@ struct ListElementNode;
 struct MapNode;
 struct MapElementNode;
 struct IdentifierNode;
+struct IdentifierStringNode;
 struct AssignementNode;
 struct LogicalExpressionNode;
 struct OperatorNode;

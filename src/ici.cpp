@@ -688,6 +688,8 @@ QVariant ICISettingsPrivate::value(const QStringList & keys, const QVariant & de
         //When adding feature, create a flag there to maintain backward compatibility
         if(keys.at(0) == "__HAS_FUNCTION")
             return true;
+        if(keys.at(0) == "__HAS_STRING_IDENTIFIER")
+            return true;
     }
     QVariant value = ::value(keys, context, defaultValue);
     return value;

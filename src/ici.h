@@ -34,6 +34,8 @@ public:
     bool hasFunction(const QString & name) const;
     QString file() const;
     int line() const;
+    //for python
+    void* fdata() const;
 private:
     friend class ICISettingsPrivate;
     ICISettingsContext();
@@ -65,7 +67,7 @@ public:
 
     bool contains(const QString & key) const;
 
-    bool createFunction(const QString & name, IciFunction);
+    bool createFunction(const QString & name, IciFunction, void* data = 0);
 
     bool reload();
 

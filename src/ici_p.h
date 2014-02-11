@@ -28,6 +28,7 @@ public:
     ICISettingsPrivate* ctx;
     QVariantList args;
     QStringList keys;
+    void* fdata;
 };
 
 class ICISettingsPrivate{
@@ -42,7 +43,7 @@ public:
     QString errorString;
     ICI::RootNode* ast;
     QVariantMap context;
-    QHash<QString, ICISettings::IciFunction> functions;
+    QHash<QString, QPair<ICISettings::IciFunction, void* > > functions;
     ICI::Node* currentNode;
 
 

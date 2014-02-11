@@ -266,10 +266,10 @@ bool ICISettings::contains(const QString & key) const{
     return d->hasKey(key);
 }
 
-bool ICISettings::createFunction(const QString & name, IciFunction funct){
+bool ICISettings::createFunction(const QString & name, IciFunction funct, void *data){
     if(d->functions.contains(name))
         return false;
-    d->functions.insert(name, funct);
+    d->functions.insert(name, QPair<IciFunction, void*>(funct, data));
     return true;
 }
 
@@ -301,25 +301,25 @@ ICISettingsPrivate::ICISettingsPrivate():
     error(false), ast(0), currentNode(0){
 
 
-    functions.insert("equals", ICI::equals);
-    functions.insert("equal", ICI::equals);
-    functions.insert("eq", ICI::equals);
-    functions.insert("lt", ICI::lt);
-    functions.insert("lte", ICI::lte);
-    functions.insert("gt", ICI::gt);
-    functions.insert("gte", ICI::gte);
+    functions.insert("equals", QPair<ICISettings::IciFunction, void*>(ICI::equals, 0));
+    functions.insert("equal",  QPair<ICISettings::IciFunction, void*>(ICI::equals, 0));
+    functions.insert("eq",     QPair<ICISettings::IciFunction, void*>(ICI::equals, 0));
+    functions.insert("lt",     QPair<ICISettings::IciFunction, void*>(ICI::lt, 0));
+    functions.insert("lte",    QPair<ICISettings::IciFunction, void*>(ICI::lte, 0));
+    functions.insert("gt",     QPair<ICISettings::IciFunction, void*>(ICI::gt, 0));
+    functions.insert("gte",    QPair<ICISettings::IciFunction, void*>(ICI::gte, 0));
 
-    functions.insert("min", ICI::min);
-    functions.insert("max", ICI::max);
+    functions.insert("min",    QPair<ICISettings::IciFunction, void*>(ICI::min, 0));
+    functions.insert("max",    QPair<ICISettings::IciFunction, void*>(ICI::max, 0));
 
-    functions.insert("sum", ICI::sum);
-    functions.insert("mul", ICI::mul);
-    functions.insert("div", ICI::div);
+    functions.insert("sum",    QPair<ICISettings::IciFunction, void*>(ICI::sum, 0));
+    functions.insert("mul",    QPair<ICISettings::IciFunction, void*>(ICI::mul, 0));
+    functions.insert("div",    QPair<ICISettings::IciFunction, void*>(ICI::div, 0));
 
-    functions.insert("contains", ICI::contains);
-    functions.insert("extend", ICI::extend);
-    functions.insert("has_function", ICI::has_function);
-    functions.insert("join", ICI::join);
+    functions.insert("contains",  QPair<ICISettings::IciFunction, void*>(ICI::contains, 0));
+    functions.insert("extend",    QPair<ICISettings::IciFunction, void*>(ICI::extend, 0));
+    functions.insert("has_function",  QPair<ICISettings::IciFunction, void*>(ICI::has_function, 0));
+    functions.insert("join",   QPair<ICISettings::IciFunction, void*>(ICI::join, 0));
 }
 
 ICISettingsPrivate::~ICISettingsPrivate(){
@@ -584,7 +584,7 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
     currentNode = node;
     if(!node)
         return false;
-    QHash<QString, ICISettings::IciFunction>::const_iterator it = functions.find(node->name);
+    QHash<QString, QPair<ICISettings::IciFunction, void* > >::const_iterator it = functions.find(node->name);
     if(it == functions.end()){
         errorString = formatError(QString("function %1 undefined").arg(node->name), node);
         return false;
@@ -602,8 +602,9 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
         else
             ctx.d->keys.append(QString());
         elem = elem->next;
-   }
-    result = it.value()(&ctx);
+    }
+    ctx.d->fdata = it.value().second;
+    result = it.value().first(&ctx);
     return !error;
 }
 
@@ -731,4 +732,8 @@ const QVariantList & ICISettingsContext::args() const{
 
 const QStringList & ICISettingsContext::keys() const {
     return d->keys;
+}
+
+void* ICISettingsContext::fdata() const {
+    return d->fdata;
 }

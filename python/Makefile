@@ -1,5 +1,5 @@
 LIBICI_DIR = `pwd`/..
-LIBS = `pkg-config pyside --libs` -L$(LIBICI_DIR) -lici 
+LIBS = `pkg-config pyside --libs` -L$(LIBICI_DIR) -lici
 
 CXXFLAGS = -I/usr/share/qt4/mkspecs/linux-g++ -I. \
    -I$(LIBICI_DIR)/src \
@@ -27,14 +27,13 @@ generate:
 	typesystem_ici.xml
 
 compile:
-	g++ ici/ici_module_wrapper.cpp ici/icisettings_wrapper.cpp -Wall -fPIC $(CXXFLAGS) -c
+	g++ ici/ici_module_wrapper.cpp ici/icisettings_wrapper.cpp ici/icisettingscontext_wrapper.cpp -Wall -fPIC $(CXXFLAGS) -c
 
 link:
-	g++ icisettings_wrapper.o ici_module_wrapper.o $(LIBS) -fPIC -shared  -Wl,-soname,ici.so -o ici.so
+	g++ icisettings_wrapper.o ici_module_wrapper.o icisettingscontext_wrapper.o $(LIBS) -fPIC -shared  -Wl,-soname,ici.so -o ici.so
 
 test:
-	LD_LIBRARY_PATH=$(LIBICI_DIR):$(LD_LIBRARY_PATH) PYTHONPATH=$(PYSIDE_PYTHONPATH):$(PYTHONPATH) $(PYTHON_INTERPRETER) -c \
-	"import ici; conf = ici.ICISettings(\"../demo.ici\"); print(conf.evaluate()); print(conf.value('foo'), conf.values())"
+	LD_LIBRARY_PATH=$(LIBICI_DIR):$(LD_LIBRARY_PATH) PYTHONPATH=$(PYSIDE_PYTHONPATH):$(PYTHONPATH) $(PYTHON_INTERPRETER) test.py
 
 clean:
 	rm -rf *.o *.so *.?pp *.log *.log ici/*

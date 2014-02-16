@@ -340,6 +340,10 @@ ICISettingsPrivate::~ICISettingsPrivate(){
 }
 
 void ICISettingsPrivate::parse(const QByteArray & data, const QString & fileName){
+    if(data.isEmpty()) {
+        return;
+    }
+
     ICIParser parser(data, fileName);
 
     error = false;
@@ -356,7 +360,7 @@ void ICISettingsPrivate::evaluate(){
     includedFiles.clear();
     currentNode = ast;
     error = false;
-    if(!ast || !evaluate(ast->nodes)){
+    if(ast && !evaluate(ast->nodes)){
         error = true;
     }
 }
@@ -404,7 +408,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
     if(node->executed)
         return true;
     bool required = true;
-    QString path = node->path;
+    QString path = replace_in_string(node->path, context);
     if(path.at(0) == '?') {
        required = false;
        path = path.mid(1);
@@ -414,7 +418,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
         return false;
     }
     QDir dir(QFileInfo(node->file).absolutePath());
-    path = dir.absoluteFilePath(replace_in_string(path, context));
+    path = dir.absoluteFilePath(path);
     QStringList paths;
     if(QFileInfo(path).isDir()){
         Q_FOREACH(const QFileInfo & file, QDir(path).entryInfoList(QDir::NoDotAndDotDot|QDir::Files)){

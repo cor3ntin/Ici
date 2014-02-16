@@ -155,6 +155,11 @@ public:
 
         type = Type_IdentifierString;
     }
+    IdentifierStringNode(IdentifierNode* previous, const QString & name)
+        :IdentifierNode(previous, name) {
+
+        type = Type_IdentifierString;
+    }
 };
 
 struct UnsetStatementNode : public StatementNode {

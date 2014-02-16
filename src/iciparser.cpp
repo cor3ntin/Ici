@@ -452,7 +452,7 @@ case 42: {
 #line 627 "ici.g"
 
 case 43: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, *(yylval.str));
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(1).Identifier, *(yylval.str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
     break;
 }

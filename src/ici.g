@@ -626,7 +626,7 @@ case $rule_number: {
 IdentifierPart: IdentifierPart DOT STRING ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, *(yylval.str));
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(1).Identifier, *(yylval.str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
     break;
 }

@@ -58,33 +58,38 @@ Language specifications
 C++/Qt api
 -----
 
-	//load a file
-	ICISettings settings(path);
-	if(settings.hasError()){
-		// handle parsing errors
-		qDebug() << settings.errorString();
-	}
-	else {
-		// you can prepare an initial context
-		settings.setValue("foo", "bar");
-		if(settings.evaluate()){
-			 QVariant baz = settings.value("baz");
-			 if(settings.contains("a.b.c"){ // fetch map value easily
-				 QVariant map = settings.value("a.b.c");
-			 }
-		}
-	}
+    //load a file
+    ICISettings settings(path);
+    if(settings.hasError()){
+        // handle parsing errors
+        qDebug() << settings.errorString();
+    }
+    else {
+        // you can prepare an initial context
+        settings.setValue("foo", "bar");
+        if(settings.evaluate()){
+             QVariant baz = settings.value("baz");
+             if(settings.contains("a.b.c"){ // fetch map value easily
+                 QVariant map = settings.value("a.b.c");
+             }
+        }
+    }
 Adding functions
 ----------------
-	QVariant hello(ICISettingsContext* ctx) {
-		if(ctx->args().size !=1 )
-			ctx->setErrorMessage("hello takes exactly one argument");
-		else
-			return "hello " + ctx->args().at(1).toString();
-		return QVariant();
-	}
+    QVariant hello(ICISettingsContext* ctx) {
+        if(ctx->args().size !=1 )
+            ctx->setErrorMessage("hello takes exactly one argument");
+        else
+            return "hello " + ctx->args().at(1).toString();
+        return QVariant();
+    }
 
-	ICISettings settings("foo = hello('foo')");
-	settings.createFunction("hello", hello);
-	settings.evaluate();
-	//settings.value("foo"); == "hello foo"
+    ICISettings settings("foo = hello('foo')");
+    settings.createFunction("hello", hello);
+    settings.evaluate();
+    //settings.value("foo"); == "hello foo"
+
+
+Syntax highlighting
+-------------------
+[Instructions are here](editors)

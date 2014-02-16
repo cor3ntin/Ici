@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- !DOCTYPE language SYSTEM "language.dtd"> -->
+<language name="Ici Files" version="1.00"  kateversion="2.4" section="Configuration" extensions="*.ici" mimetype="text/x-ici" priority="15">
+<highlighting>
+    <list name="keywords">
+        <item> if </item>
+        <item> else </item>
+        <item> and </item>
+        <item> or </item>
+        <item> include </item>
+        <item> unset </item>
+        <item> true </item>
+        <item> false </item>
+        <item> null </item>
+    </list>
+    <list name="builtin">
+      <item>equals</item>
+      <item>equal</item>
+      <item>eq</item>
+      <item>lt</item>
+      <item>lte</item>
+      <item>gt</item>
+      <item>gte</item>
+      <item>min</item>
+      <item>max</item>
+      <item>sum</item>
+      <item>mul</item>
+      <item>div</item>
+      <item>contains</item>
+      <item>extend</item>
+      <item>join</item>
+    </list>
+    <list name="builtin_values">
+      <item>PWD</item>
+      <item>__HAS_FUNCTION</item>
+    </list>
+    <contexts>
+        <context name="Normal" attribute="Normal">
+            <RegExpr attribute="Pyratemp" String="@!.*!@" context="#stay"/>
+            <RegExpr attribute="Pyratemp" String="&lt;\!--\(.*\)--&gt;" context="#stay"/>
+
+            <keyword attribute="Keyword" context="#stay" String="keywords" />
+            <Int attribute="Int" context="#stay" />
+            <Float attribute="Float" context="#stay" />
+            <keyword attribute="Builtin Values" context="#stay" String="builtin_values"  />
+            <keyword attribute="Builtin Function" context="#stay" String="builtin"  />
+            <RegExpr attribute="FunctionCall" String="\b[_\w][_\w\d]*(?=[\s]*[(])" context="#stay"/>
+            <AnyChar attribute="Operator" String="+=-*:," context="#stay"/>
+            <StringDetect attribute="String" String="&quot;&quot;&quot;" context="StringRaw"/>
+            <DetectChar attribute="String" char="&quot;" context="StringDQ"/>
+            <StringDetect attribute="String" String="'" context="StringSQ"/>
+            <DetectChar char="#" context="Comment" attribute="Comment"/>
+      </context>
+      <context name="StringVariants" attribute="String">
+          <LineContinue  attribute="String" context="#stay" />
+          <HlCStringChar attribute="String" context="#stay"/>
+          <RegExpr attribute="Pyratemp" String="@!.*!@" context="#stay"/>
+          <RegExpr attribute="Pyratemp" String="&lt;\!--\(.*\)--&gt;" context="#stay"/>
+          <keyword attribute="Builtin Values" context="#stay" String="builtin_values"  />
+          <RegExpr attribute="ExpressionInString" String="\$\{.*\}" context="#stay"/>
+      </context>
+      <context name="StringDQ" attribute="String" lineEndContext="#pop">
+          <IncludeRules context="StringVariants"/>
+          <DetectChar attribute="String" context="#pop" char="&quot;"/>
+      </context>
+      <context name="StringSQ" attribute="String" lineEndContext="#pop">
+          <IncludeRules context="StringVariants"/>
+          <DetectChar attribute="String" context="#pop" char="'"/>
+      </context>
+      <context name="StringRaw" attribute="String" lineEndContext="#stay">
+          <IncludeRules context="StringVariants"/>
+          <StringDetect attribute="String" context="#pop" String="&quot;&quot;&quot;"/>
+      </context>
+      <context name="Comment" attribute="Comment" lineEndContext="#pop">
+      </context>
+    </contexts>
+    <itemDatas>
+      <itemData name="Normal" defStyleNum="dsNormal"/>
+      <itemData name="Builtin Values" defStyleNum="dsDataType" bold="1" spellChecking="false" />
+      <itemData name="Keyword"  defStyleNum="dsKeyword"/>
+      <itemData name="Comment" defStyleNum="dsComment"/>
+      <itemData name="Float" defStyleNum="dsFloat" spellChecking="false"/>
+      <itemData name="Int" defStyleNum="dsDecVal" spellChecking="false"/>
+      <itemData name="FunctionCall" defStyleNum="dsFunction" spellChecking="false"/>
+      <itemData name="Builtin Function" defStyleNum="dsFunction" bold="1" spellChecking="false" />
+      <itemData name="ExpressionInString" defStyleNum="dsChar" bold="1" spellChecking="false"/>
+      <itemData name="Operator" defStyleNum="dsNormal" bold="1" spellChecking="false"/>
+      <itemData name="String" defStyleNum="dsString"/>
+      <itemData name="Pyratemp" defStyleNum="dsOther" italic="1" bold="1"/>
+    </itemDatas>
+  </highlighting>
+  <general>
+    <comments>
+      <comment name="singleLine" start="#"/>
+    </comments>
+  </general>
+</language>

@@ -1,4 +1,5 @@
 Add the following in ~/.nanorc
+
     syntax "ici" "\.(ici|conf)$"
     color brightyellow "([0-9a-zA-Z_]+)\s*\("
     color brightyellow "\}"

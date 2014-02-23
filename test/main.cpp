@@ -38,6 +38,6 @@ int main(int argc, char *argv[])
         qDebug() << settings.errorString();
         return 1;
     }
-    qDebug() << settings.values() << settings.value("test").toString();
+    qDebug() << settings.values();
     return 0;
 }

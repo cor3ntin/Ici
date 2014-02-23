@@ -599,20 +599,19 @@ case $rule_number: {
 }
 ./
 
-
-LExpression: DIGIT ;
+LExpression: String;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (yylval.dval);
+    sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(sym(1).str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 ./
 
-LExpression: String;
+LExpression: Double;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(sym(1).str));
+sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (sym(1).dval);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
@@ -647,6 +646,7 @@ LExpression: RExpression;
 
 RExpression: Identifier;
 
+
 Identifier: IdentifierPart ;
 /.
 case $rule_number: {
@@ -665,28 +665,28 @@ case $rule_number: {
 }
 ./
 
-Identifier: IdentifierPart DOT DIGIT ;
+IdentifierPart: IdentifierPart DOT StoredIdentifier ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::finish(ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, QString::number(yylval.dval)));
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
-    break;
-}
-./
-
-IdentifierPart: StoredIdentifier DOT IdentifierPart ;
-/.
-case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(3).Identifier, *(sym(1).str));
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, *(sym(3).str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
 ./
 
-IdentifierPart: String DOT IdentifierPart;
+IdentifierPart: IdentifierPart DOT String;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(3).Identifier, *(sym(1).str));
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(1).Identifier, *(sym(3).str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
+    break;
+}
+./
+
+IdentifierPart: IdentifierPart DOT Double;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, QString::number(sym(3).dval));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
@@ -723,6 +723,14 @@ StoredIdentifier: IDENT;
 /.
 case $rule_number: {
     sym(1).str = yylval.str;
+    break;
+}
+./
+
+Double: DIGIT ;
+/.
+case $rule_number: {
+    sym(1).dval = yylval.dval;
     break;
 }
 ./

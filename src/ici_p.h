@@ -43,6 +43,8 @@ public:
     QString errorString;
     ICI::RootNode* ast;
     QVariantMap context;
+    QVariantMap userValues;
+
     QHash<QString, QPair<ICISettings::IciFunction, void* > > functions;
     ICI::Node* currentNode;
 

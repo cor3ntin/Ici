@@ -425,23 +425,23 @@ case 39: {
     break;
 }
 
-#line 604 "ici.g"
+#line 603 "ici.g"
 
 case 40: {
-    sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (yylval.dval);
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
-    break;
-}
-
-#line 613 "ici.g"
-
-case 41: {
     sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(sym(1).str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 622 "ici.g"
+#line 612 "ici.g"
+
+case 41: {
+sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (sym(1).dval);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+
+#line 621 "ici.g"
 
 case 42: {
     sym(1).Node = ICI::makeAstNode<ICI::NullNode> ();
@@ -449,7 +449,7 @@ case 42: {
     break;
 }
 
-#line 630 "ici.g"
+#line 629 "ici.g"
 
 case 43: {
     sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (true);
@@ -457,7 +457,7 @@ case 43: {
     break;
 }
 
-#line 638 "ici.g"
+#line 637 "ici.g"
 
 case 44: {
     sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (false);
@@ -484,15 +484,15 @@ case 48: {
 #line 669 "ici.g"
 
 case 49: {
-    sym(1).Node = ICI::finish(ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, QString::number(yylval.dval)));
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, *(sym(3).str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
 
 #line 678 "ici.g"
 
 case 50: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(3).Identifier, *(sym(1).str));
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(1).Identifier, *(sym(3).str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
@@ -500,7 +500,7 @@ case 50: {
 #line 687 "ici.g"
 
 case 51: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(3).Identifier, *(sym(1).str));
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, QString::number(sym(3).dval));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
@@ -535,7 +535,14 @@ case 55: {
     break;
 }
 
-#line 732 "ici.g"
+#line 731 "ici.g"
+
+case 56: {
+    sym(1).dval = yylval.dval;
+    break;
+}
+
+#line 740 "ici.g"
 
         } // switch
         m_stack [m_tos].state = nt_action (act, lhs [r] - TERMINAL_COUNT);

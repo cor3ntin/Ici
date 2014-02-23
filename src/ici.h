@@ -55,7 +55,7 @@ public:
     bool hasError() const;
     QString errorString() const;
 
-    bool evaluate();
+    bool evaluate(bool clear = false);
 
     void setContext(const QVariantMap & ctx);
     void setValue(const QString & key, const QVariant & defaultValue);

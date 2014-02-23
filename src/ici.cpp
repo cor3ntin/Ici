@@ -275,6 +275,7 @@ void ICISettings::setContext(const QVariantMap & context){
 
 void ICISettings::setValue(const QString & key, const QVariant & value){
     d->setValue(key, value);
+    set_value(key, value, d->userValues);
 }
 
 QVariant ICISettings::value(const QString & key, const QVariant & defaultValue) const{
@@ -314,7 +315,10 @@ bool ICISettings::createFunction(const QString & name, IciFunction funct, void *
     return true;
 }
 
-bool ICISettings::evaluate(){
+bool ICISettings::evaluate(bool clear){
+    if(clear) {
+        d->context = d->userValues;
+    }
     d->evaluate();
     return !d->error;
 }
@@ -753,7 +757,7 @@ QVariant ICISettingsPrivate::value(const QString & key, const QVariant & default
     return value(key.split('.'), defaultValue);
 }
 
-void ICISettingsPrivate::setValue(const QString & key, const QVariant & value){
+void ICISettingsPrivate::setValue(const QString & key, const QVariant & value) {
     set_value(key, value, context);
 }
 

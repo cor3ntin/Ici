@@ -94,6 +94,7 @@ protected:
           ICI::LogicalExpressionNode* LogicalExpression;
           ICI::ListElementNode* ListElement;
           ICI::MapElementNode* MapElement;
+          ICI::MapNode* Map;
           ICI::OperatorNode*    Operator;
           const QString* str;
     };
@@ -370,6 +371,15 @@ Statement: Assignement ;
 /.
 case $rule_number: {
 sym(1).Node = ICI::makeAstNode<ICI::AssignementStatementNode>(sym(1).Assignement);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+
+Statement: Map ;
+/.
+case $rule_number: {
+sym(1).Node = ICI::makeAstNode<ICI::MapStatementNode>(sym(1).Map);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }

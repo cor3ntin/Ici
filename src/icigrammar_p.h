@@ -34,15 +34,15 @@ public:
     TOKEN_TRUE = 5,
     TOKEN_UNSET = 26,
 
-    ACCEPT_STATE = 90,
-    RULE_COUNT = 59,
-    STATE_COUNT = 92,
+    ACCEPT_STATE = 92,
+    RULE_COUNT = 60,
+    STATE_COUNT = 94,
     TERMINAL_COUNT = 27,
     NON_TERMINAL_COUNT = 23,
 
-    GOTO_INDEX_OFFSET = 92,
-    GOTO_INFO_OFFSET = 270,
-    GOTO_CHECK_OFFSET = 270
+    GOTO_INDEX_OFFSET = 94,
+    GOTO_INFO_OFFSET = 301,
+    GOTO_CHECK_OFFSET = 301
   };
 
   static const char  *const    spell [];

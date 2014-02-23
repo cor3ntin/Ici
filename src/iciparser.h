@@ -46,6 +46,7 @@ protected:
           ICI::LogicalExpressionNode* LogicalExpression;
           ICI::ListElementNode* ListElement;
           ICI::MapElementNode* MapElement;
+          ICI::MapNode* Map;
           ICI::OperatorNode*    Operator;
           const QString* str;
     };

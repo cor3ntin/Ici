@@ -437,6 +437,19 @@ bool ICISettingsPrivate::evaluate(ICI::StatementNode* node, ICI::StatementListNo
            }
            return success;
         }
+        case ICI::Node::Type_Map:{
+           QVariant value;
+           bool success = evaluate(static_cast<ICI::MapStatementNode*>(node)->map, value);
+           if(!success || value.type() != QVariant::Map){
+               return false;
+           }
+           QVariantMap map = value.toMap();
+           for(QVariantMap::const_iterator it = map.begin(); it != map.end(); ++it){
+               setValue(it.key(), it.value());
+           }
+           return true;
+        }
+
         case ICI::Node::Type_Unset:
             return evaluate(static_cast<ICI::UnsetStatementNode*>(node));
         default:return false;

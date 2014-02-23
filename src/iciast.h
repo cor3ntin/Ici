@@ -313,6 +313,17 @@ struct MapNode : public ExpressionNode {
     MapElementNode* nodes;
 };
 
+struct MapStatementNode : public StatementNode {
+    MapStatementNode(MapNode* map)
+        :map(map){
+        type = Type_Map;
+    }
+    virtual ~MapStatementNode(){
+        delete map;
+    }
+    MapNode* map;
+};
+
 struct FunctionCallNode : public ExpressionNode {
     FunctionCallNode(const QString & name, ListElementNode* parameters = 0)
         :name(name), parameters(parameters){

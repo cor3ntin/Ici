@@ -30,6 +30,7 @@ struct StringLiteralNode;
 struct ListNode;
 struct ListElementNode;
 struct MapNode;
+struct MapStatementNode;
 struct MapElementNode;
 struct IdentifierNode;
 struct IdentifierStringNode;

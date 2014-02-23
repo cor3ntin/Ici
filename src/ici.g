@@ -396,25 +396,23 @@ case $rule_number: {
 }
 ./
 
-IfStatement: IF LogicalExpression StatementBlock ELSE StatementBlock;
+IfStatement: IF LExpression StatementBlock ELSE StatementBlock;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).LogicalExpression,
+    sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).Expression,
                   sym(3).StatementList, sym(5).StatementList);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(5))
     break;
 }
 ./
-IfStatement: IF LogicalExpression StatementBlock ;
+IfStatement: IF LExpression StatementBlock ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).LogicalExpression, sym(3).StatementList);
+    sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).Expression, sym(3).StatementList);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
 ./
-
-
 
 LExpression: LPAREN LExpression RPAREN ;
 /.
@@ -424,8 +422,6 @@ case $rule_number: {
     break;
 }
 ./
-
-LExpression: LogicalExpression;
 
 LogicalExpression: LExpression AND LExpression ;
 /.
@@ -451,6 +447,9 @@ case $rule_number: {
     break;
 }
 ./
+
+LExpression: LogicalExpression;
+
 
 
 LExpression: FunctionCall;

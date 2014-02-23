@@ -499,8 +499,6 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
             currentIncludedNode = currentIncludedNode->next;
         currentIncludedNode->next = next_node;
         next_node = firstIncludedNode;
-
-
         node->executed = true;
     }
     parent->next = next_node;
@@ -676,9 +674,13 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
 
 bool ICISettingsPrivate::evaluate(ICI::IfStatementNode* node){
     currentNode = node;
-    bool istrue = false;
-    if(!evaluate(node->condition, istrue))
+    QVariant value;
+    if(!evaluate(node->condition, value))
         return false;
+    bool istrue = !value.isNull();
+    if(istrue && value.canConvert<bool>()){
+        istrue = value.toBool();
+    }
     return evaluate(istrue ? node->block : node->alternative_block);
 }
 

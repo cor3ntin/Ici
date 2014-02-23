@@ -344,7 +344,7 @@ struct LogicalExpressionNode : public ExpressionNode {
 };
 
 struct IfStatementNode : public StatementNode {
-    IfStatementNode(LogicalExpressionNode* condition, StatementListNode* block, StatementListNode* alternative_block = 0)
+    IfStatementNode(ExpressionNode* condition, StatementListNode* block, StatementListNode* alternative_block = 0)
         :condition(condition), block(block), alternative_block(alternative_block){
          type = Type_IfStatement;
     }
@@ -355,7 +355,7 @@ struct IfStatementNode : public StatementNode {
         delete alternative_block;
     }
 
-    LogicalExpressionNode* condition;
+    ExpressionNode* condition;
     StatementListNode* block;
     StatementListNode* alternative_block;
 };

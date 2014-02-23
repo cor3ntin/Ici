@@ -25,6 +25,7 @@
 %token NULL
 %token TRUE
 %token FALSE
+%token DOLLAR
 %token DOT
 %token EQUAL
 %token PLUS_EQUAL
@@ -414,7 +415,8 @@ case $rule_number: {
 ./
 
 
-Expression: LPAREN Expression RPAREN ;
+
+LExpression: LPAREN LExpression RPAREN ;
 /.
 case $rule_number: {
     sym(1).Node = sym(2).Node;
@@ -422,23 +424,26 @@ case $rule_number: {
     break;
 }
 ./
-LogicalExpression: Expression AND LogicalExpression ;
+
+LExpression: LogicalExpression;
+
+LogicalExpression: LExpression AND LExpression ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(3).LogicalExpression, ICI::Node::AndOperator);
+    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(3).Expression, ICI::Node::AndOperator);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 ./
-LogicalExpression: Expression OR LogicalExpression ;
+LogicalExpression: LExpression OR LExpression ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(3).LogicalExpression, ICI::Node::OrOperator);
+    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(3).Expression, ICI::Node::OrOperator);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 ./
-LogicalExpression: NOT Expression ;
+LogicalExpression: NOT LExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(2).Expression, (ICI::LogicalExpressionNode*)0, ICI::Node::NotOperator);
@@ -446,26 +451,18 @@ case $rule_number: {
     break;
 }
 ./
-LogicalExpression: Expression ;
+
+
+LExpression: FunctionCall;
+FunctionCall: StoredIdentifier LPAREN RPAREN ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression);
+    sym(1).Node = ICI::makeAstNode<ICI::FunctionCallNode> (*(sym(1).str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 ./
-
-
-Expression: FunctionCall;
-FunctionCall: StoredIdent LPAREN RPAREN ;
-/.
-case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::FunctionCallNode> (*(yylval.str));
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
-    break;
-}
-./
-FunctionCall: StoredIdent LPAREN ListParameters RPAREN ;
+FunctionCall: StoredIdentifier LPAREN ListParameters RPAREN ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::FunctionCallNode> (*(sym(1).str), ICI::finish(sym(3).ListElement));
@@ -508,7 +505,7 @@ case $rule_number: {
 }
 ./
 
-Assignement: Identifier AssignementOperator Expression ;
+Assignement: RExpression AssignementOperator LExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::AssignementNode> (sym(1).Identifier, sym(2).Operator, sym(3).Expression);
@@ -517,7 +514,7 @@ case $rule_number: {
 }
 ./
 
-Expression : List ;
+LExpression : List ;
 List : LSQUARE_BRACKET RSQUARE_BRACKET ;
 /.
 case $rule_number: {
@@ -542,7 +539,7 @@ case $rule_number: {
     break;
 }
 ./
-ListParameters: Expression ;
+ListParameters: LExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::ListElementNode> (sym(1).Expression);
@@ -550,7 +547,7 @@ case $rule_number: {
     break;
 }
 ./
-ListParameters: ListParameters COMMA Expression ;
+ListParameters: ListParameters COMMA LExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::ListElementNode> (sym(1).ListElement, sym(3).Expression);
@@ -559,7 +556,7 @@ case $rule_number: {
 }
 ./
 
-Expression : Map ;
+LExpression : Map ;
 Map : LBRACKET RBRACKET ;
 /.
 case $rule_number: {
@@ -585,7 +582,7 @@ case $rule_number: {
 }
 ./
 
-MapParameters: Identifier COLON Expression ;
+MapParameters: Identifier COLON LExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::MapElementNode> (sym(1).Identifier, sym(3).Expression);
@@ -594,7 +591,7 @@ case $rule_number: {
 }
 ./
 
-MapParameters: MapParameters COMMA Identifier COLON Expression ;
+MapParameters: MapParameters COMMA Identifier COLON LExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::MapElementNode> (sym(1).MapElement, sym(3).Identifier, sym(5).Expression);
@@ -603,7 +600,53 @@ case $rule_number: {
 }
 ./
 
-Expression: Identifier ;
+
+LExpression: DIGIT ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (yylval.dval);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+
+LExpression: String;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(sym(1).str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+
+LExpression: NULL;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::NullNode> ();
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+LExpression: TRUE;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (true);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+LExpression: FALSE;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (false);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+
+LExpression: RExpression;
+
+RExpression: Identifier;
 
 Identifier: IdentifierPart ;
 /.
@@ -614,34 +657,43 @@ case $rule_number: {
 }
 ./
 
-IdentifierPart: IdentifierPart DOT StoredIdent ;
+Identifier: DOT IdentifierPart ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, *(sym(3).str));
+    sym(1).Node = ICI::finish(sym(2).Identifier);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
     break;
 }
 ./
 
-IdentifierPart: IdentifierPart DOT STRING ;
+Identifier: IdentifierPart DOT DIGIT ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(1).Identifier, *(yylval.str));
+    sym(1).Node = ICI::finish(ICI::makeAstNode<ICI::IdentifierNode> (sym(1).Identifier, QString::number(yylval.dval)));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
     break;
 }
 ./
 
-IdentifierPart: IdentifierPart DOT DIGIT ;
+IdentifierPart: StoredIdentifier DOT IdentifierPart ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(1).Identifier, QString::number(yylval.dval));
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (sym(3).Identifier, *(sym(1).str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }
 ./
 
-IdentifierPart: StoredIdent ;
+IdentifierPart: String DOT IdentifierPart;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(3).Identifier, *(sym(1).str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
+    break;
+}
+./
+
+IdentifierPart: StoredIdentifier ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (*(sym(1).str));
@@ -650,64 +702,33 @@ case $rule_number: {
 }
 ./
 
-IdentifierPart: DOT STRING;
+IdentifierPart: String ;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (*(yylval.str));
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode>(*(sym(1).str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
-
 ./
-StoredIdent: IDENT ;
+
+
+String: STRING;
 /.
 case $rule_number: {
     sym(1).str = yylval.str;
     break;
 }
 ./
-Expression: DIGIT ;
+
+StoredIdentifier: IDENT;
 /.
 case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (yylval.dval);
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    sym(1).str = yylval.str;
     break;
 }
 ./
 
-Expression: STRING;
-/.
-case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(yylval.str));
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
-    break;
-}
-./
 
-Expression: NULL;
-/.
-case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::NullNode> ();
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
-    break;
-}
-./
-Expression: TRUE;
-/.
-case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (true);
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
-    break;
-}
-./
-Expression: FALSE;
-/.
-case $rule_number: {
-    sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (false);
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
-    break;
-}
-./
 
 /.
         } // switch

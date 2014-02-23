@@ -583,8 +583,16 @@ bool ICISettingsPrivate::evaluate(ICI::ExpressionNode* node, QVariant & value){
            value = replace_in_string(static_cast<ICI::StringLiteralNode*>(node)->value, context);
            return true;
        case ICI::Node::Type_Identifier:
+       case ICI::Node::Type_IdentifierString:
            value = this->value(identifier_keys(static_cast<ICI::IdentifierNode*>(node), context), QVariant());
            return true;
+       case ICI::Node::Type_LogicalExpression: {
+            bool istrue = false;
+            if(!evaluate(static_cast<ICI::LogicalExpressionNode*>(node), istrue))
+                return false;
+            value = istrue;
+            return true;
+       }
        case ICI::Node::Type_FunctionCall:
            return evaluate(static_cast<ICI::FunctionCallNode*>(node), value);
        case ICI::Node::Type_List:{
@@ -603,7 +611,9 @@ bool ICISettingsPrivate::evaluate(ICI::ExpressionNode* node, QVariant & value){
             value = map;
             return true;
         }
-       default: return false;
+       default:
+        qDebug() << "Not a valid Expression ?";
+        return false;
     }
     return false;
 }
@@ -672,19 +682,16 @@ bool ICISettingsPrivate::evaluate(ICI::IfStatementNode* node){
     return evaluate(istrue ? node->block : node->alternative_block);
 }
 
-bool ICISettingsPrivate::evaluate(ICI::LogicalExpressionNode* node, bool & istrue){
+bool ICISettingsPrivate::evaluate(ICI::LogicalExpressionNode* node, bool & istrue) {
     currentNode = node;
     QVariant value;
     if(!evaluate(node->condition, value)){
         return false;
     }
-    if(value.isNull())
-        value = false;
-    if(!value.canConvert<bool>()){
-        errorString = errorString = formatError(QLatin1String("Error at line %1:%2 : boolean expression expected"), node);
-        return false;
+    istrue = !value.isNull();
+    if(istrue && value.canConvert<bool>()){
+        istrue = value.toBool();
     }
-    istrue = value.toBool();
     if(node->op == ICI::Node::NotOperator){
         istrue = !istrue;
         return true;
@@ -693,8 +700,14 @@ bool ICISettingsPrivate::evaluate(ICI::LogicalExpressionNode* node, bool & istru
         if(node->op == ICI::Node::OrOperator && istrue)
             return true;
         bool nextistrue = false;
-        if(!evaluate(node->next, nextistrue))
+        QVariant nextvalue;
+        if(!evaluate(node->next, nextvalue)) {
             return false;
+        }
+        nextistrue = !nextvalue.isNull();
+        if(nextistrue && nextvalue.canConvert<bool>()){
+            nextistrue = nextvalue.toBool();
+        }
         if(node->op == ICI::Node::AndOperator)
             istrue = istrue && nextistrue;
         if(node->op == ICI::Node::OrOperator)

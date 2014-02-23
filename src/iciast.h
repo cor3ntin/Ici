@@ -26,7 +26,7 @@ namespace ICI{
 struct Node
 {
     enum Type {
-        Type_Node,
+        Type_Node = 0,
         Type_Source,
         Type_Statements,
         Type_Statement,
@@ -38,14 +38,14 @@ struct Node
         Type_Operator,
 
         Type_Expression,
-        Type_NumericLiteral,
+        Type_NumericLiteral = 10,
         Type_BooleanLiteral,
         Type_StringLiteral,
         Type_Null,
         Type_List,
         Type_Map,
         Type_Identifier,
-        Type_IdentifierString,
+        Type_IdentifierString = 17,
 
         Type_FunctionCall,
         Type_LogicalExpression
@@ -125,7 +125,11 @@ struct OperatorNode : public Node {
     Operator op;
 };
 
-struct IdentifierNode : public ExpressionNode {
+struct RExprepressionNode : public ExpressionNode {
+
+};
+
+struct IdentifierNode : public RExprepressionNode {
     IdentifierNode(IdentifierNode* previous, const QString & name){
         type = Type_Identifier;
         this->name = name;
@@ -150,13 +154,14 @@ struct IdentifierNode : public ExpressionNode {
 
 struct IdentifierStringNode : IdentifierNode {
 public:
-    IdentifierStringNode(const QString & name)
-        :IdentifierNode(name) {
+    IdentifierStringNode(IdentifierNode* previous, const QString & name)
+        :IdentifierNode(previous, name) {
 
         type = Type_IdentifierString;
     }
-    IdentifierStringNode(IdentifierNode* previous, const QString & name)
-        :IdentifierNode(previous, name) {
+
+    IdentifierStringNode(const QString & name)
+        :IdentifierNode(name) {
 
         type = Type_IdentifierString;
     }
@@ -323,7 +328,7 @@ struct FunctionCallStatementNode : public StatementNode {
 };
 
 struct LogicalExpressionNode : public ExpressionNode {
-    LogicalExpressionNode(ExpressionNode* node, LogicalExpressionNode* next = 0, Node::Operator op = OperatorNone)
+    LogicalExpressionNode(ExpressionNode* node, ExpressionNode* next = 0, Node::Operator op = OperatorNone)
         :condition(node), next(next), op(op){
         type = Type_LogicalExpression;
     }
@@ -334,7 +339,7 @@ struct LogicalExpressionNode : public ExpressionNode {
     }
 
     ExpressionNode* condition;
-    LogicalExpressionNode* next;
+    ExpressionNode* next;
     Operator op;
 };
 

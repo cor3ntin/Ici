@@ -23,6 +23,7 @@ struct RootNode;
 struct StatementNode;
 struct StatementListNode;
 struct ExpressionNode;
+struct RExpressionNode;
 struct NumericLiteralNode;
 struct BooleanLiteralNode;
 struct StringLiteralNode;

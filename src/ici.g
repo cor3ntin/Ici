@@ -25,7 +25,6 @@
 %token NULL
 %token TRUE
 %token FALSE
-%token DOLLAR
 %token DOT
 %token EQUAL
 %token PLUS_EQUAL
@@ -88,6 +87,7 @@ protected:
           ICI::Node* Node;
           ICI::StatementNode* Statement;
           ICI::FunctionCallNode* FunctionCall;
+          ICI::AssignementNode* Assignement;
           ICI::StatementListNode* StatementList;
           ICI::IdentifierNode* Identifier;
           ICI::ExpressionNode* Expression;
@@ -331,6 +331,7 @@ case $rule_number: {
 } break;
 ./
 
+
 StatementList: StatementList Statement ;
 /.
 case $rule_number: {
@@ -366,6 +367,14 @@ case $rule_number: {
 ./
 
 Statement: Assignement ;
+/.
+case $rule_number: {
+sym(1).Node = ICI::makeAstNode<ICI::AssignementStatementNode>(sym(1).Assignement);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+./
+
 Statement: IfStatement ;
 Statement: IncludeStatement;
 Statement: UnsetStatement;
@@ -503,6 +512,8 @@ case $rule_number: {
     break;
 }
 ./
+
+RExpression: Assignement;
 
 Assignement: LExpression AssignementOperator RExpression ;
 /.

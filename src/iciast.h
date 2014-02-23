@@ -178,7 +178,7 @@ struct UnsetStatementNode : public StatementNode {
     IdentifierNode* identifier;
 };
 
-struct AssignementNode : public StatementNode {
+struct AssignementNode : public ExpressionNode {
     AssignementNode(IdentifierNode* id, OperatorNode* op, ExpressionNode* value)
         :id(id), op(op), value(value){
         type = Type_Assignement;
@@ -193,6 +193,17 @@ struct AssignementNode : public StatementNode {
     IdentifierNode* id;
     OperatorNode* op;
     ExpressionNode* value;
+};
+
+struct AssignementStatementNode : public StatementNode {
+    AssignementStatementNode(AssignementNode* node)
+        :node(node){
+         type = Type_Assignement;
+    }
+    virtual ~AssignementStatementNode(){
+        delete node;
+    }
+    AssignementNode* node;
 };
 
 struct StringLiteralNode : public ExpressionNode {

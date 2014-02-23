@@ -37,7 +37,6 @@ static QByteArray stringbuffer;
 
 "\n" { ++m_line; m_pos = 0; }
 
-"$"	{ return TOKEN_DOLLAR; }
 "="	{ return TOKEN_EQUAL; }
 "+=" { return TOKEN_PLUS_EQUAL; }
 "-=" { return TOKEN_MINUS_EQUAL; }

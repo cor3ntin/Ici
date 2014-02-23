@@ -1,5 +1,5 @@
 
-#line 52 "ici.g"
+#line 51 "ici.g"
 
 /****************************************************************************
 **
@@ -39,6 +39,7 @@ protected:
           ICI::Node* Node;
           ICI::StatementNode* Statement;
           ICI::FunctionCallNode* FunctionCall;
+          ICI::AssignementNode* Assignement;
           ICI::StatementListNode* StatementList;
           ICI::IdentifierNode* Identifier;
           ICI::ExpressionNode* Expression;

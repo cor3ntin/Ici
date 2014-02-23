@@ -57,7 +57,7 @@ public:
     bool evaluate(ICI::ListElementNode*, QVariantList &value);
     bool evaluate(ICI::MapElementNode*, QVariantMap &values);
     bool evaluate(ICI::IdentifierNode*);
-    bool evaluate(ICI::AssignementNode*);
+    bool evaluate(ICI::AssignementNode*, QVariant &value);
     bool evaluate(ICI::UnsetStatementNode*);
     bool evaluate(ICI::FunctionCallNode*,QVariant &);
     bool evaluate(ICI::IfStatementNode*);

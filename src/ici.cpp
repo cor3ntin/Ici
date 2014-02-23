@@ -419,8 +419,10 @@ bool ICISettingsPrivate::evaluate(ICI::StatementNode* node, ICI::StatementListNo
         return true;
     currentNode = node;
     switch(node->type){
-        case ICI::Node::Type_Assignement:
-           return evaluate(static_cast<ICI::AssignementNode*>(node));
+        case ICI::Node::Type_Assignement:{
+           QVariant out;
+           return evaluate(static_cast<ICI::AssignementStatementNode*>(node)->node, out);
+        }
         case ICI::Node::Type_IfStatement:
            return evaluate(static_cast<ICI::IfStatementNode*>(node));
         case ICI::Node::Type_Include:
@@ -509,7 +511,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
     return true;
 }
 
-bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
+bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node, QVariant & out){
     if(!node)
         return true;
     currentNode = node;
@@ -520,11 +522,14 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
     switch(node->op->op){
         case ICI::Node::AssignementOperator:
             set_value(keys, value, context);
+            out = value;
             break;
         case ICI::Node::AssignementAdditionOperator:{
             QVariant & v = ::value_unsafe(keys, context);
             if(v.type() == QVariant::List){
-                asList(v).append(value);
+                QVariantList &lst = asList(v);
+                lst.append(value);
+                out = lst;
             }
             else {
                 errorString = formatError(keys.join(".") +" is not a list", node);
@@ -534,8 +539,10 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
         }
         case ICI::Node::AssignementSubstractionOperator:{
              QVariant & v = ::value_unsafe(keys, context);
-            if(v.type() == QVariant::List){
+            if(v.type() == QVariant::List) {
+                QVariantList &lst = asList(v);
                 asList(v).removeAll(value);
+                out = lst;
             }
             else {
                 errorString = formatError(keys.join(".") +" is not a list", node);
@@ -546,13 +553,17 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node){
         case ICI::Node::AssignementUniqueAdditionOperator:{
             QVariant & v = ::value_unsafe(keys, context);
             if(v.isNull()) {
-                set_value(keys, QVariantList() << value , context);
+                QVariantList lst;
+                lst << value;
+                set_value(keys, lst , context);
+                out = lst;
             }
             else if(v.type() == QVariant::List){
                 QVariantList & lst = asList(v);
                 if(!lst.contains(value)) {
                     lst.append(value);
                 }
+                out = lst;
             }
             break;
         }
@@ -597,6 +608,8 @@ bool ICISettingsPrivate::evaluate(ICI::ExpressionNode* node, QVariant & value){
        }
        case ICI::Node::Type_FunctionCall:
            return evaluate(static_cast<ICI::FunctionCallNode*>(node), value);
+       case ICI::Node::Type_Assignement:
+            return evaluate(static_cast<ICI::AssignementNode*>(node), value);
        case ICI::Node::Type_List:{
            QVariantList lst;
            ICI::ListElementNode* elem =  static_cast<ICI::ListNode*>(node)->nodes;

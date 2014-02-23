@@ -396,7 +396,7 @@ case $rule_number: {
 }
 ./
 
-IfStatement: IF LExpression StatementBlock ELSE StatementBlock;
+IfStatement: IF RExpression StatementBlock ELSE StatementBlock;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).Expression,
@@ -405,7 +405,7 @@ case $rule_number: {
     break;
 }
 ./
-IfStatement: IF LExpression StatementBlock ;
+IfStatement: IF RExpression StatementBlock ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).Expression, sym(3).StatementList);
@@ -414,7 +414,7 @@ case $rule_number: {
 }
 ./
 
-LExpression: LPAREN LExpression RPAREN ;
+RExpression: LPAREN RExpression RPAREN ;
 /.
 case $rule_number: {
     sym(1).Node = sym(2).Node;
@@ -423,7 +423,7 @@ case $rule_number: {
 }
 ./
 
-LogicalExpression: LExpression AND LExpression ;
+LogicalExpression: RExpression AND RExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(3).Expression, ICI::Node::AndOperator);
@@ -431,7 +431,7 @@ case $rule_number: {
     break;
 }
 ./
-LogicalExpression: LExpression OR LExpression ;
+LogicalExpression: RExpression OR RExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(1).Expression, sym(3).Expression, ICI::Node::OrOperator);
@@ -439,7 +439,7 @@ case $rule_number: {
     break;
 }
 ./
-LogicalExpression: NOT LExpression ;
+LogicalExpression: NOT RExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::LogicalExpressionNode> (sym(2).Expression, (ICI::LogicalExpressionNode*)0, ICI::Node::NotOperator);
@@ -448,11 +448,11 @@ case $rule_number: {
 }
 ./
 
-LExpression: LogicalExpression;
+RExpression: LogicalExpression;
 
 
 
-LExpression: FunctionCall;
+RExpression: FunctionCall;
 FunctionCall: StoredIdentifier LPAREN RPAREN ;
 /.
 case $rule_number: {
@@ -504,7 +504,7 @@ case $rule_number: {
 }
 ./
 
-Assignement: RExpression AssignementOperator LExpression ;
+Assignement: LExpression AssignementOperator RExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::AssignementNode> (sym(1).Identifier, sym(2).Operator, sym(3).Expression);
@@ -513,7 +513,7 @@ case $rule_number: {
 }
 ./
 
-LExpression : List ;
+RExpression : List ;
 List : LSQUARE_BRACKET RSQUARE_BRACKET ;
 /.
 case $rule_number: {
@@ -538,7 +538,7 @@ case $rule_number: {
     break;
 }
 ./
-ListParameters: LExpression ;
+ListParameters: RExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::ListElementNode> (sym(1).Expression);
@@ -546,7 +546,7 @@ case $rule_number: {
     break;
 }
 ./
-ListParameters: ListParameters COMMA LExpression ;
+ListParameters: ListParameters COMMA RExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::ListElementNode> (sym(1).ListElement, sym(3).Expression);
@@ -555,7 +555,7 @@ case $rule_number: {
 }
 ./
 
-LExpression : Map ;
+RExpression : Map ;
 Map : LBRACKET RBRACKET ;
 /.
 case $rule_number: {
@@ -581,7 +581,7 @@ case $rule_number: {
 }
 ./
 
-MapParameters: Identifier COLON LExpression ;
+MapParameters: Identifier COLON RExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::MapElementNode> (sym(1).Identifier, sym(3).Expression);
@@ -590,7 +590,7 @@ case $rule_number: {
 }
 ./
 
-MapParameters: MapParameters COMMA Identifier COLON LExpression ;
+MapParameters: MapParameters COMMA Identifier COLON RExpression ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::MapElementNode> (sym(1).MapElement, sym(3).Identifier, sym(5).Expression);
@@ -599,7 +599,7 @@ case $rule_number: {
 }
 ./
 
-LExpression: String;
+RExpression: String;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(sym(1).str));
@@ -608,7 +608,7 @@ case $rule_number: {
 }
 ./
 
-LExpression: Double;
+RExpression: Double;
 /.
 case $rule_number: {
 sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (sym(1).dval);
@@ -617,7 +617,7 @@ sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (sym(1).dval);
 }
 ./
 
-LExpression: NULL;
+RExpression: NULL;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::NullNode> ();
@@ -625,7 +625,7 @@ case $rule_number: {
     break;
 }
 ./
-LExpression: TRUE;
+RExpression: TRUE;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (true);
@@ -633,7 +633,7 @@ case $rule_number: {
     break;
 }
 ./
-LExpression: FALSE;
+RExpression: FALSE;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (false);
@@ -642,9 +642,9 @@ case $rule_number: {
 }
 ./
 
-LExpression: RExpression;
+RExpression: LExpression;
 
-RExpression: Identifier;
+LExpression: Identifier;
 
 
 Identifier: IdentifierPart ;

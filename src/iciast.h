@@ -125,11 +125,11 @@ struct OperatorNode : public Node {
     Operator op;
 };
 
-struct RExprepressionNode : public ExpressionNode {
+struct LExprepressionNode : public ExpressionNode {
 
 };
 
-struct IdentifierNode : public RExprepressionNode {
+struct IdentifierNode : public LExprepressionNode {
     IdentifierNode(IdentifierNode* previous, const QString & name){
         type = Type_Identifier;
         this->name = name;

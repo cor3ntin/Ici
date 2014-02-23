@@ -35,6 +35,12 @@ QVariant sum(ICISettingsContext* ctx);
 QVariant mul(ICISettingsContext* ctx);
 QVariant div(ICISettingsContext* ctx);
 
+QVariant is_list(ICISettingsContext* ctx);
+QVariant is_map(ICISettingsContext* ctx);
+QVariant is_string(ICISettingsContext* ctx);
+QVariant is_double(ICISettingsContext* ctx);
+QVariant is_bool(ICISettingsContext* ctx);
+
 QVariant contains(ICISettingsContext* ctx);
 QVariant extend(ICISettingsContext* ctx);
 QVariant has_function(ICISettingsContext* ctx);

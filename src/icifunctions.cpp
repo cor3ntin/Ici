@@ -52,6 +52,39 @@ QVariant contains(ICISettingsContext* ctx){
     return false;
 }
 
+QVariant::Type type_of(ICISettingsContext* ctx){
+    if(ctx->args().size() !=1 ) {
+        ctx->setErrorMessage(QString("type_of expect exactly 1 argument"));
+        return QVariant::Invalid;
+    }
+    return ctx->args().at(0).type();
+}
+
+QVariant is_list(ICISettingsContext* ctx) {
+    int type = type_of(ctx);
+    return type == QVariant::List || type == QVariant::StringList;
+}
+
+QVariant is_map(ICISettingsContext* ctx) {
+    int type = type_of(ctx);
+    return type == QVariant::Map;
+}
+
+QVariant is_bool(ICISettingsContext* ctx) {
+    int type = type_of(ctx);
+    return type == QVariant::Bool;
+}
+
+QVariant is_string(ICISettingsContext* ctx) {
+    int type = type_of(ctx);
+    return type == QVariant::ByteArray || type == QVariant::String;
+}
+
+QVariant is_double(ICISettingsContext* ctx) {
+    int type = type_of(ctx);
+    return type == QVariant::Int || type == QVariant::Double;
+}
+
 QVariant extend(ICISettingsContext* ctx){
     if(ctx->args().size() < 2){
         ctx->setErrorMessage(QString("extend expects at least 2 arguments"));

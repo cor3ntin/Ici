@@ -26,7 +26,7 @@
 class ICIParser: protected ICIGrammar
 {
 public:
-    ICIParser(const QByteArray & data, const QString & fileName = QString());
+ICIParser(const QByteArray & data, const QString & fileName = QString());
 
     bool parse();
     QString errorString() const;

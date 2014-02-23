@@ -460,39 +460,39 @@ case 43: {
 #line 636 "ici.g"
 
 case 44: {
-    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (*(sym(1).str));
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(1).Identifier, QString::number(yylval.dval));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
     break;
 }
 
 #line 645 "ici.g"
 
 case 45: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierNode> (*(sym(1).str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+
+#line 654 "ici.g"
+
+case 46: {
     sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (*(yylval.str));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
 
-#line 654 "ici.g"
-
-case 46: {
-    sym(1).str = yylval.str;
-    break;
-}
-
-#line 661 "ici.g"
+#line 663 "ici.g"
 
 case 47: {
-    sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (yylval.dval);
-    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    sym(1).str = yylval.str;
     break;
 }
 
 #line 670 "ici.g"
 
 case 48: {
-    sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(yylval.str));
+    sym(1).Node = ICI::makeAstNode<ICI::NumericLiteralNode> (yylval.dval);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
@@ -500,28 +500,36 @@ case 48: {
 #line 679 "ici.g"
 
 case 49: {
+    sym(1).Node = ICI::makeAstNode<ICI::StringLiteralNode> (*(yylval.str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
+    break;
+}
+
+#line 688 "ici.g"
+
+case 50: {
     sym(1).Node = ICI::makeAstNode<ICI::NullNode> ();
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 687 "ici.g"
+#line 696 "ici.g"
 
-case 50: {
+case 51: {
     sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (true);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 695 "ici.g"
+#line 704 "ici.g"
 
-case 51: {
+case 52: {
     sym(1).Node = ICI::makeAstNode<ICI::BooleanLiteralNode> (false);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(1))
     break;
 }
 
-#line 703 "ici.g"
+#line 712 "ici.g"
 
         } // switch
         m_stack [m_tos].state = nt_action (act, lhs [r] - TERMINAL_COUNT);

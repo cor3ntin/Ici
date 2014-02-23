@@ -31,6 +31,13 @@ static QVariantList & asList(QVariant & v) {
     return *const_cast<QVariantList*>(static_cast<const QVariantList*>(v.constData()));
 }
 
+static const QVariantList & asList(const QVariant & v) {
+    if(v.type() != QVariant::List)
+        return nullVariantList;
+    return *static_cast<const QVariantList*>(v.constData());
+}
+
+
 static QVariantMap & asMap(QVariant & v) {
     if(v.type() != QVariant::Map)
         return nullVariantMap;
@@ -56,6 +63,16 @@ QVariant & value_unsafe(const QStringList & keys, QVariantMap & context){
             return value;
         if(value.type() == QVariant::Map)
             map = &asMap(value);
+        else if(i == keys.size() -1 && value.type() == QVariant::List) {
+            const QString & idxStr = keys.at(i);
+            bool ok;
+            int idx = idxStr.toInt(&ok);
+            if(ok) {
+                QVariantList & lst = asList(value);
+                if(idx < lst.size())
+                    return lst[idx];
+            }
+        }
         else
             return nullVariant;
     }
@@ -76,6 +93,16 @@ QVariant value(const QStringList & keys, const QVariantMap & context,
             return value;
         if(value.type() == QVariant::Map)
             map = &asMap(value);
+        else if(i == keys.size() -1 && value.type() == QVariant::List) {
+            const QString & idxStr = keys.at(i);
+            bool ok;
+            int idx = idxStr.toInt(&ok);
+            if(ok) {
+                const QVariantList & lst = asList(value);
+                if(idx < lst.size())
+                    return lst[idx];
+            }
+        }
         else
             return defaultValue;
     }
@@ -106,21 +133,22 @@ bool unset(const QStringList & keys, QVariantMap & context){
     if(keys.size() == 1){
         return context.remove(keys.first()) > 0;
     }
-    QVariant variant = context;
-    int i = 0;
-    while(i < keys.size()) {
-        const QString & key = keys.at(i);
-        if(variant.type() == QVariant::Map){
-            QVariantMap & map = asMap(variant);
-            QVariantMap::iterator it = map.find(key);
-            if(it != map.constEnd()){
-                if(keys.isEmpty()) {
-                    map.erase(it);
-                    return true;
-                }
-                variant = *it;
-            }
-        }
+    QVariant v = value_unsafe(keys.mid(0, keys.size() - 1), context);
+    if(v.isNull())
+        return false;
+    if(v.type() == QVariant::Map) {
+        QVariantMap & map = asMap(v);
+        return map.remove(keys.last()) != 0;
+    }
+    if(v.type() == QVariant::List) {
+        QVariantList & lst = asList(v);
+        bool ok;
+        int idx = keys.last().toInt(&ok);
+        if(!ok || idx >= lst.size())
+            return false;
+        lst.removeAt(idx);
+        return true;
+
     }
     return false;
 }
@@ -328,6 +356,13 @@ ICISettingsPrivate::ICISettingsPrivate():
     functions.insert("sum",    QPair<ICISettings::IciFunction, void*>(ICI::sum, 0));
     functions.insert("mul",    QPair<ICISettings::IciFunction, void*>(ICI::mul, 0));
     functions.insert("div",    QPair<ICISettings::IciFunction, void*>(ICI::div, 0));
+
+    functions.insert("is_list",   QPair<ICISettings::IciFunction, void*>(ICI::is_list, 0));
+    functions.insert("is_map",    QPair<ICISettings::IciFunction, void*>(ICI::is_map, 0));
+    functions.insert("is_string", QPair<ICISettings::IciFunction, void*>(ICI::is_string, 0));
+    functions.insert("is_bool",   QPair<ICISettings::IciFunction, void*>(ICI::is_bool, 0));
+    functions.insert("is_double", QPair<ICISettings::IciFunction, void*>(ICI::is_double, 0));
+
 
     functions.insert("contains",  QPair<ICISettings::IciFunction, void*>(ICI::contains, 0));
     functions.insert("extend",    QPair<ICISettings::IciFunction, void*>(ICI::extend, 0));

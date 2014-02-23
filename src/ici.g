@@ -74,7 +74,7 @@
 class ICIParser: protected $table
 {
 public:
-    ICIParser(const QByteArray & data, const QString & fileName = QString());
+ICIParser(const QByteArray & data, const QString & fileName = QString());
 
     bool parse();
     QString errorString() const;
@@ -627,6 +627,15 @@ IdentifierPart: IdentifierPart DOT STRING ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(1).Identifier, *(yylval.str));
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
+    break;
+}
+./
+
+IdentifierPart: IdentifierPart DOT DIGIT ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::IdentifierStringNode> (sym(1).Identifier, QString::number(yylval.dval));
     ICI_UP_LOC(sym(1).Node, loc(1), loc(2))
     break;
 }

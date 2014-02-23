@@ -13,6 +13,8 @@
         Shiboken::AutoDecRef arglist(PyTuple_New(1));
         PyTuple_SET_ITEM(arglist, 0, %CONVERTTOPYTHON[ICISettingsContext*](ctx));
         Shiboken::AutoDecRef ret(PyObject_CallObject(pyobject, arglist));
+        if(ret == 0)
+            return false;
         QVariant val = %CONVERTTOCPP[QVariant](ret);
         return val;
     }

@@ -1,0 +1,4 @@
+*.o
+moc_*
+ici.pro.user
+Makefile

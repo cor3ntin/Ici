@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<typesystem package="ici">
+    <load-typesystem name="typesystem_core.xml" generate="no" />
+    <object-type name="ICISettings">
+
+    <inject-code class="native" position="beginning">
+    static QVariant python_ici_callback(ICISettingsContext* ctx)
+    {
+        PyObject* pyobject = static_cast&lt;PyObject*&gt;(ctx->fdata());
+        if(pyobject == 0 )
+            return false;
+        Shiboken::GilState state;
+        Shiboken::AutoDecRef arglist(PyTuple_New(1));
+        PyTuple_SET_ITEM(arglist, 0, %CONVERTTOPYTHON[ICISettingsContext*](ctx));
+        Shiboken::AutoDecRef ret(PyObject_CallObject(pyobject, arglist));
+        if(ret == 0)
+            return false;
+        QVariant val = %CONVERTTOCPP[QVariant](ret);
+        return val;
+    }
+    </inject-code>
+    <add-function signature="createFunction(const QString&amp;, PyObject)" return-type="bool">
+        <inject-code class="target" position="beginning">
+          bool ret;
+          if (!PyCallable_Check(%PYARG_2)) {
+            PyErr_SetString(PyExc_TypeError, "parameter must be callable");
+            ret = false;
+          }
+          else {
+            PyCodeObject* objCode = reinterpret_cast&lt;PyCodeObject*&gt;(PyFunction_GET_CODE(%PYARG_2));
+            int numArgs = objCode->co_flags &amp; CO_VARARGS ? -1 : objCode->co_argcount;
+            if( numArgs != 1 ) {
+                PyErr_SetString(PyExc_TypeError, "Ici callbacks require a 'context' argument");
+                ret = false;
+            }
+            else {
+                Py_INCREF(%PYARG_2);
+                ret = cppSelf->createFunction(cppArg0, python_ici_callback, %PYARG_2);
+            }
+          }
+          return %CONVERTTOPYTHON[bool](ret);
+        </inject-code>
+    </add-function>
+  </object-type>
+  <object-type name="ICISettingsContext" />
+</typesystem>

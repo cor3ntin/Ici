@@ -1,7 +1,9 @@
 LIBICI_DIR = `pwd`/..
 LIBS = `pkg-config pyside --libs` -L$(LIBICI_DIR) -lici
 
-CXXFLAGS = -I/usr/share/qt4/mkspecs/linux-g++ -I. \
+MKSPECS_PATH = `qmake -query QMAKE_MKSPECS`
+
+CXXFLAGS = -I$(MKSPECS_PATH)/linux-g++ -I. \
    -I$(LIBICI_DIR)/src \
    -I`pwd`/ici \
    -I`pkg-config --variable=includedir pyside`/QtCore/ \
@@ -15,11 +17,12 @@ QT4TYPESYSTEM_DIR = `pkg-config pyside --variable=typesystemdir`
 QT4HEADER_DIRS = `pkg-config --variable=includedir QtCore`:`pkg-config --variable=includedir QtCore`/..
 PYSIDE_PYTHONPATH = `pkg-config --variable=pythonpath PySide`
 PYTHON_INTERPRETER = `pkg-config --variable=python_interpreter shiboken`
+SHIBOKEN = `pkg-config shiboken --variable=generator_location`
 
 all: generate compile link
 
 generate:
-	shiboken --generatorSet=shiboken \
+	$(SHIBOKEN) --generatorSet=shiboken \
 	global.h \
 	--include-paths=$(LIBICI_DIR)/src:$(QT4HEADER_DIRS):/usr/include \
 	--typesystem-paths=.:$(QT4TYPESYSTEM_DIR) \

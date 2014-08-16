@@ -106,7 +106,8 @@ struct StatementListNode : public Node {
 
     virtual ~StatementListNode(){
         delete node;
-        delete next;
+        if(this->next != this)
+            delete next;
     }
 
     StatementNode  *node;
@@ -247,7 +248,9 @@ struct ListElementNode : public Node {
     }
 
     ListElementNode(ExpressionNode* value){
-        this->next  = this;
+        if(this->next != this)
+            this->next  = this;
+
         this->value = value;
         type = Type_List;
     }
@@ -290,7 +293,8 @@ struct MapElementNode : public Node {
     }
 
     virtual ~MapElementNode(){
-        delete next;
+        if(next != this)
+            delete next;
         delete value;
         delete key;
     }

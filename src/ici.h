@@ -20,9 +20,17 @@
 #include <QVariantMap>
 #include <QStringList>
 
+#   ifdef  ICI_EXPORT_DLL
+#       define ICI_EXPORT Q_DECL_EXPORT
+#   elif  defined(ICI_IMPORT_DLL)
+#       define ICI_EXPORT Q_DECL_IMPORT
+#   else
+#       define ICI_EXPORT
+#endif
+
 class ICISettingsPrivate;
 class ICISettingsContextPrivate;
-class ICISettingsContext{
+class ICI_EXPORT ICISettingsContext{
 public:
     ~ICISettingsContext();
     void setErrorMessage(const QString & message);
@@ -42,7 +50,7 @@ private:
     ICISettingsContextPrivate* d;
 };
 
-class ICISettings : public QObject
+class ICI_EXPORT ICISettings : public QObject
 {
     Q_OBJECT
 public:
@@ -55,7 +63,7 @@ public:
     bool hasError() const;
     QString errorString() const;
 
-    bool evaluate(bool clear = false);
+    bool evaluate(bool clear = false, bool ignore_errors = false);
 
     void setContext(const QVariantMap & ctx);
     void setValue(const QString & key, const QVariant & defaultValue);

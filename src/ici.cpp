@@ -193,7 +193,7 @@ QString ICISettingsPrivate::replace_in_string(QString string, const QVariantMap 
     bool escaped = false;
     int in = 0;
     int begin = 0;
-    for(int i = 0; i < string.size(); i++){
+    for(int i = 0; i < string.size() && i>=0; i++) {
         QChar c = string.at(i);
         if (c == '\\') {
             escaped = !escaped ;
@@ -315,11 +315,11 @@ bool ICISettings::createFunction(const QString & name, IciFunction funct, void *
     return true;
 }
 
-bool ICISettings::evaluate(bool clear){
+bool ICISettings::evaluate(bool clear, bool ignore_errors){
     if(clear) {
         d->context = d->userValues;
     }
-    d->evaluate();
+    d->evaluate(ignore_errors);
     return !d->error;
 }
 
@@ -368,6 +368,7 @@ ICISettingsPrivate::ICISettingsPrivate():
     functions.insert("is_double", QPair<ICISettings::IciFunction, void*>(ICI::is_double, 0));
 
 
+    functions.insert("to_int",  QPair<ICISettings::IciFunction, void*>(ICI::to_int, 0));
     functions.insert("contains",  QPair<ICISettings::IciFunction, void*>(ICI::contains, 0));
     functions.insert("extend",    QPair<ICISettings::IciFunction, void*>(ICI::extend, 0));
     functions.insert("has_function",  QPair<ICISettings::IciFunction, void*>(ICI::has_function, 0));
@@ -393,12 +394,13 @@ void ICISettingsPrivate::parse(const QByteArray & data, const QString & fileName
     else{
         ast = parser.ast();
     }
+    includedFiles.clear();
 }
 
-void ICISettingsPrivate::evaluate(){
-    includedFiles.clear();
+void ICISettingsPrivate::evaluate(bool ignore_errors) {
     currentNode = ast;
     error = false;
+    this->ignore_errors = ignore_errors;
     if(ast && !evaluate(ast->nodes)){
         error = true;
     }
@@ -504,7 +506,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
         ICIParser parser(data, filepath);
         if(!parser.parse()) {
             errorString = QString("Can not parse file %1 : %2").arg(path, parser.errorString());
-            if(required) {
+            if(required && !ignore_errors) {
                 error = true;
                 return false;
             }
@@ -681,6 +683,8 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
     QHash<QString, QPair<ICISettings::IciFunction, void* > >::const_iterator it = functions.find(node->name);
     if(it == functions.end()){
         errorString = formatError(QString("function %1 undefined").arg(node->name), node);
+        if(ignore_errors)
+            return true;
         return false;
     }
     QVariantList parameters;

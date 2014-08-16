@@ -35,6 +35,7 @@ QVariant sum(ICISettingsContext* ctx);
 QVariant mul(ICISettingsContext* ctx);
 QVariant div(ICISettingsContext* ctx);
 
+QVariant to_int(ICISettingsContext* ctx);
 QVariant is_list(ICISettingsContext* ctx);
 QVariant is_map(ICISettingsContext* ctx);
 QVariant is_string(ICISettingsContext* ctx);

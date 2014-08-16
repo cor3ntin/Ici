@@ -285,6 +285,18 @@ QVariant div(ICISettingsContext* ctx) {
     return ctx->args().at(0).toDouble() / ctx->args().at(1).toDouble();
 }
 
+QVariant to_int(ICISettingsContext* ctx) {
+    if(ctx->args().size() != 1){
+        ctx->setErrorMessage("to_int takes 1 argument");
+        return false;
+    }
+    if(!ctx->args().at(0).canConvert(QVariant::Double)) {
+        ctx->setErrorMessage("NaN");
+        return QVariant();
+    }
+    return ctx->args().at(0).toLongLong();
+}
+
 
 
 }

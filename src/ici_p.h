@@ -38,6 +38,7 @@ public:
     void parse(const  QByteArray & data,const QString & fileName = QString());
 
     bool error;
+    bool ignore_errors;
     QString fileName;
     QStringList includedFiles;
     QString errorString;
@@ -49,7 +50,7 @@ public:
     ICI::Node* currentNode;
 
 
-    void evaluate();
+    void evaluate(bool ignore_errors);
     bool evaluate(ICI::StatementListNode*);
     bool evaluate(ICI::StatementNode*, ICI::StatementListNode*);
     bool evaluate(ICI::IncludeStatementNode*, ICI::StatementListNode*);

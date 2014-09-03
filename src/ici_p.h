@@ -37,6 +37,7 @@ public:
     ~ICISettingsPrivate();
     void parse(const  QByteArray & data,const QString & fileName = QString());
 
+    bool parseError;
     bool error;
     bool ignore_errors;
     QString fileName;

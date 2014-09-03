@@ -315,7 +315,9 @@ bool ICISettings::createFunction(const QString & name, IciFunction funct, void *
     return true;
 }
 
-bool ICISettings::evaluate(bool clear, bool ignore_errors){
+bool ICISettings::evaluate(bool clear, bool ignore_errors) {
+    if(d->parseError)
+        return false;
     if(clear) {
         d->context = d->userValues;
     }
@@ -329,7 +331,7 @@ bool ICISettings::reload() {
     QFile f(d->fileName);
     if(!f.exists())
         return true;
-    d->error = !f.open(QIODevice::ReadOnly);
+    d->parseError = d->error = !f.open(QIODevice::ReadOnly);
     if(d->error)
         d->errorString = f.errorString();
     QByteArray content = f.readAll();
@@ -343,7 +345,7 @@ QStringList ICISettings::files() const {
 
 
 ICISettingsPrivate::ICISettingsPrivate():
-    error(false), ast(0), currentNode(0){
+    parseError(false), error(false), ast(0), currentNode(0){
 
 
     functions.insert("equals", QPair<ICISettings::IciFunction, void*>(ICI::equals, 0));
@@ -386,9 +388,9 @@ void ICISettingsPrivate::parse(const QByteArray & data, const QString & fileName
 
     ICIParser parser(data, fileName);
 
-    error = false;
+    parseError = error = false;
     if(!parser.parse()){
-        error = true;
+        parseError = error = true;
         errorString = parser.errorString();
     }
     else{

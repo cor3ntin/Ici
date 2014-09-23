@@ -429,6 +429,8 @@ bool ICISettingsPrivate::evaluate(ICI::StatementNode* node, ICI::StatementListNo
         }
         case ICI::Node::Type_IfStatement:
            return evaluate(static_cast<ICI::IfStatementNode*>(node));
+        case ICI::Node::Type_ForeachStatement:
+            return evaluate(static_cast<ICI::ForeachStatementNode*>(node));
         case ICI::Node::Type_Include:
            return evaluate(static_cast<ICI::IncludeStatementNode*>(node), parent);
         case ICI::Node::Type_FunctionCall:{
@@ -718,6 +720,28 @@ bool ICISettingsPrivate::evaluate(ICI::IfStatementNode* node){
         istrue = value.toBool();
     }
     return evaluate(istrue ? node->block : node->alternative_block);
+}
+
+bool ICISettingsPrivate::evaluate(ICI::ForeachStatementNode* node){
+    currentNode = node;
+    QVariant value;
+    if(!evaluate(node->lst, value))
+        return false;
+    if(value.isNull())
+        return true;
+    if(!value.canConvert(QVariant::List)) {
+        errorString = formatError("foreach : expression is not a list", node);
+        return false;
+    }
+    QVariantList list = value.toList();
+    QVariant cached_var = this->value(node->var, QVariant());
+    Q_FOREACH(const QVariant & v, list) {
+        setValue(node->var, v);
+        if(!evaluate(node->block))
+            return false;
+    }
+    setValue(node->var, cached_var);
+    return true;
 }
 
 bool ICISettingsPrivate::evaluate(ICI::LogicalExpressionNode* node, bool & istrue) {

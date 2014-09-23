@@ -63,6 +63,7 @@ public:
     bool evaluate(ICI::UnsetStatementNode*);
     bool evaluate(ICI::FunctionCallNode*,QVariant &);
     bool evaluate(ICI::IfStatementNode*);
+    bool evaluate(ICI::ForeachStatementNode*);
     bool evaluate(ICI::LogicalExpressionNode*,bool & istrue);
 
     QString replace_in_string(QString string, const QVariantMap & context);

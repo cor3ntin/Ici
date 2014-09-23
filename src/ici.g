@@ -45,6 +45,7 @@
 %token ELSE
 %token INCLUDE
 %token UNSET
+%token FOREACH
 
 %start Source
 
@@ -386,6 +387,7 @@ sym(1).Node = ICI::makeAstNode<ICI::MapStatementNode>(sym(1).Map);
 ./
 
 Statement: IfStatement ;
+Statement: ForeachStatement ;
 Statement: IncludeStatement;
 Statement: UnsetStatement;
 
@@ -428,6 +430,15 @@ IfStatement: IF RExpression StatementBlock ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).Expression, sym(3).StatementList);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
+    break;
+}
+./
+
+ForeachStatement : FOREACH StoredIdentifier COLON RExpression StatementBlock ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::ForeachStatementNode> (*(sym(2).str), sym(4).Expression, sym(5).StatementList);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }

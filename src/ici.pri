@@ -13,5 +13,5 @@ SOURCES += \
     $$PWD/ici.cpp \
     $$PWD/icifunctions.cpp
 
-OTHER_FILES += ici.l ici.g
+OTHER_FILES += $$PWD/ici.l $$PWD/ici.g
 INCLUDEPATH += $$PWD $$PWD/../../includes

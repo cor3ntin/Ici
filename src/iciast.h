@@ -31,6 +31,7 @@ struct Node
         Type_Statements,
         Type_Statement,
         Type_IfStatement,
+        Type_ForeachStatement,
         Type_Include,
         Type_Unset,
 
@@ -384,6 +385,20 @@ struct IfStatementNode : public StatementNode {
     ExpressionNode* condition;
     StatementListNode* block;
     StatementListNode* alternative_block;
+};
+
+struct ForeachStatementNode : public StatementNode {
+    ForeachStatementNode(const QString & var, ExpressionNode* lst, StatementListNode* block)
+        :var(var), lst(lst), block(block) {
+         type = Type_ForeachStatement;
+    }
+    virtual ~ForeachStatementNode(){
+        delete lst;
+        delete block;
+    }
+    QString var;
+    ExpressionNode* lst;
+    StatementListNode* block;
 };
 
 struct RootNode : public Node {

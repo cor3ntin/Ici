@@ -38,6 +38,7 @@ struct AssignementNode;
 struct LogicalExpressionNode;
 struct OperatorNode;
 struct IfStatementNode;
+struct ForeachStatementNode;
 struct IncludeStatementNode;
 struct UnsetStatementNode;
 struct FunctionCallNode;

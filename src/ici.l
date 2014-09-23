@@ -60,6 +60,7 @@ static QByteArray stringbuffer;
 "null" { return TOKEN_NULL; }
 "include" { return TOKEN_INCLUDE; }
 "unset" { return TOKEN_UNSET; }
+"foreach" { return TOKEN_FOREACH; }
 
 \"  { BEGIN double_string; stringbuffer.clear(); }
 <double_string>[^\\"]*   { stringbuffer.append(yytext); }

@@ -19,6 +19,8 @@
 #include "iciparser.h"
 #include "icifunctions.h"
 #include <QFile>
+#include <QDir>
+#include <QFileInfo>
 #include <QHash>
 
 static QVariantList nullVariantList;

@@ -19,7 +19,12 @@
 #ifndef _ICIPARSER_H_
 #define _ICIPARSER_H_
 
-#include <QtCore>
+#include <ctype.h>
+#include <QString>
+#include <QByteArray>
+#include <QVarLengthArray>
+#include <QSet>
+#include <QDebug>
 #include "icigrammar_p.h"
 #include "iciast_fwd.h"
 

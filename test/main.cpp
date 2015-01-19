@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
     QCoreApplication app(argc, argv);
 
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+    //QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
 
     ICISettings settings(path);
     if(settings.hasError()){

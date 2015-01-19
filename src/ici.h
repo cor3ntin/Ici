@@ -13,8 +13,8 @@
 **
 ****************************************************************************/
 
-#ifndef _ICI_H
-#define _ICI_H
+#ifndef _ICI_H__
+#define _ICI_H__
 
 #include <QObject>
 #include <QVariantMap>

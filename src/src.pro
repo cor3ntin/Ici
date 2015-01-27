@@ -27,7 +27,7 @@ qlalr.CONFIG += no_link explicit_dependencies target_predeps
 QMAKE_EXTRA_COMPILERS += qlalr
 
 HEADERS += iciparser.h \
-    $$PWD/icigrammar_p.h \
+    icigrammar_p.h \
     $$PWD/iciast.h \
     $$PWD/iciast_fwd.h \
     $$PWD/ici.h\

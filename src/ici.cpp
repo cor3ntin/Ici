@@ -687,7 +687,7 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
     if(!node)
         return false;
     QHash<QString, QPair<ICISettings::IciFunction, void* > >::const_iterator it = functions.find(node->name);
-    if(it == functions.end()){
+    if(it == functions.end()) {
         errorString = formatError(QString("function %1 undefined").arg(node->name), node);
         if(ignore_errors)
             return true;

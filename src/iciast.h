@@ -249,15 +249,14 @@ struct ListElementNode : public Node {
     }
 
     ListElementNode(ExpressionNode* value){
-        if(this->next != this)
-            this->next  = this;
-
+        this->next  = this;
         this->value = value;
         type = Type_List;
     }
 
-    virtual ~ListElementNode(){
-        delete next;
+    virtual ~ListElementNode() {
+        if(this->next != this)
+            delete next;
         delete value;
     }
 

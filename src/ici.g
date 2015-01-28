@@ -309,7 +309,7 @@ bool ICIParser::parse()
 
       else if (act > 0)
         {
-          if (++m_tos == m_stack_size)
+          if (++m_tos == m_stack_size-1)
             reallocateStack();
 
           m_stack [m_tos].value.dval = yytoken; // ### save the token value here

@@ -174,6 +174,23 @@ protected:
 
 #define ICI_UP_LOC(node, start, end) node->file = m_fileName; node->line = start.line; node->pos = start.pos;
 
+
+
+namespace ICI {
+template <typename NodeType, typename... Args>
+NodeType* makeAstNode(Args&&...args){
+    return new NodeType(std::forward<Args>(args)...);
+}
+
+template <typename NodeType> NodeType* finish(NodeType* node) {
+    if(!node)
+        return 0;
+    NodeType* front = node->next;
+    node->next = 0;
+    return front;
+}
+}
+
 bool ishexnstring(const QString & string) {
     for (int i = 0; i < string.length(); i++) {
         if (isxdigit(string[i] == 0))

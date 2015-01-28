@@ -415,26 +415,6 @@ struct RootNode : public Node {
 };
 
 
-template <typename NodeType> NodeType* makeAstNode(){
-    return new NodeType();
-}
-template <typename NodeType, typename Arg1> NodeType* makeAstNode(Arg1 arg1){
-    return new NodeType(arg1);
-}
-template <typename NodeType, typename Arg1, typename Arg2> NodeType* makeAstNode(Arg1 arg1, Arg2 arg2){
-    return new NodeType(arg1, arg2);
-}
-template <typename NodeType, typename Arg1,typename Arg2, typename Arg3> NodeType* makeAstNode(Arg1 arg1, Arg2 arg2, Arg3 arg3){
-    return new NodeType(arg1, arg2, arg3);
-}
-
-template <typename NodeType> NodeType* finish(NodeType* node){
-    if(!node)
-        return 0;
-    NodeType* front = node->next;
-    node->next = 0;
-    return front;
-}
 }
 
 #endif // CONFIGURATIONPARSERAST_H

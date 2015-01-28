@@ -4,6 +4,8 @@ TARGET = ici
 
 TEMPLATE = lib
 
+CONFIG += c++11
+
 OBJECTS_DIR = .obj
 DESTDIR = ..
 

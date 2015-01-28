@@ -45,6 +45,7 @@ public:
     //for python
     void* fdata() const;
 private:
+    friend QVariant eval_string(ICISettingsContext* ctx);
     friend class ICISettingsPrivate;
     ICISettingsContext();
     ICISettingsContextPrivate* d;

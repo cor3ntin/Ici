@@ -66,8 +66,8 @@ public:
     bool evaluate(ICI::ForeachStatementNode*);
     bool evaluate(ICI::LogicalExpressionNode*,bool & istrue);
 
-    QString replace_in_string(QString string, const QVariantMap & context);
-    QStringList identifier_keys(ICI::IdentifierNode* node, const QVariantMap & context);
+    QString replace_in_string(QString string, bool twoDollarsSigns = false);
+    QStringList identifier_keys(ICI::IdentifierNode* node);
     bool hasKey(const QString & key) const;
     bool hasKey(const QStringList & key) const;
     QVariant value(const QString & key, const QVariant & defaultValue) const;

@@ -33,7 +33,6 @@ class ICISettings : public QObject {
 public:
 
     explicit ICISettings(const QString & file, QObject* parent = 0);
-    explicit ICISettings(const QByteArray & data, QObject* parent = 0);
     virtual ~ICISettings();
 
     bool hasError() const;
@@ -63,7 +62,7 @@ public:
         {
             ret = sipCpp->createFunction(QString(*a0), python_ici_callback, a1);
         }
-        return sipBuildResult(NULL, "b", &ret);
+        sipRes = sipBuildResult(NULL, "b", &ret);
 %End
 
     bool reload();
@@ -95,13 +94,15 @@ QVariant python_ici_callback(ICISettingsContext* ctx) {
         return QVariant();
     }
     int err = 0;
-    void* v = sipConvertToType(res, sipType_QVariant, NULL, 0, 0, &err);
+    int state = 0;
+    void* v = sipConvertToType(res, sipType_QVariant, NULL, 0, &state, &err);
     if(!v) {
         PyErr_SetString(PyExc_TypeError, "Can not convert to QVariant");
         return QVariant();
     }
     QVariant variant(*(QVariant*)v);
-    delete (QVariant*)v;
+    sipReleaseType(v,sipType_QVariant, state);
+
     Py_XDECREF(res);
     return variant;
 }

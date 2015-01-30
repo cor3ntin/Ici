@@ -19,7 +19,7 @@ CFLAGS = -pipe -fPIC -Wall -W
 CXXFLAGS = -pipe -fPIC -Wall -W
 LFLAGS = -L.. -Wl,-rpath,. -Wl,-rpath,.. -shared -Wl,--version-script=ici.exp
 SIP=$(PYROOT)/bin/sip
-SIP_FLAGS = -I$(QT_INCLUDE_DIR) -x VendorID -t WS_X11 -t Qt_5_2_1 -x Py_v3 -I$(PYROOT)/sip
+SIP_FLAGS = -e -w -r -k -I$(QT_INCLUDE_DIR) -x VendorID -t WS_X11 -t Qt_5_4_0 -x Py_v3 -I$(PYROOT)/sip
 LIBS = -lici
 .SUFFIXES: .c .o .cpp .cc .cxx .C .sip
 

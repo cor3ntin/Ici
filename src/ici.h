@@ -36,7 +36,8 @@ public:
     void setErrorMessage(const QString & message);
     QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
     bool exists(const QString & key) const;
-    void setValue(const QString & key, const QVariant & defaultValue);
+    void setValue(const QString & key, const QVariant & value);
+    void setUserValue(const QString & key, const QVariant & value);
     const QVariantList & args() const;
     const QStringList & keys() const;
     bool hasFunction(const QString & name) const;

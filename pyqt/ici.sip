@@ -14,6 +14,7 @@ public:
     QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
     bool exists(const QString & key) const;
     void setValue(const QString & key, const QVariant & defaultValue);
+    void setUserValue(const QString & key, const QVariant & value);
     const QVariantList & args() const;
     const QStringList & keys() const;
     bool hasFunction(const QString & name) const;
@@ -41,7 +42,7 @@ public:
     bool evaluate(bool clear = false, bool ignore_errors = false);
 
     void setContext(const QVariantMap & ctx);
-    void setValue(const QString & key, const QVariant & defaultValue);
+    void setValue(const QString & key, const QVariant & value);
 
     QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
     QMap<QString, QVariant > values() const;

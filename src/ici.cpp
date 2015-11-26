@@ -878,8 +878,13 @@ bool ICISettingsContext::exists(const QString & key) const{
     return d->ctx->hasKey(key);
 }
 
-void ICISettingsContext::setValue(const QString & key, const QVariant & defaultValue){
-    set_value(key, defaultValue, d->ctx->context);
+void ICISettingsContext::setValue(const QString & key, const QVariant & value){
+    set_value(key, value, d->ctx->context);
+}
+
+void ICISettingsContext::setUserValue(const QString & key, const QVariant & value) {
+    set_value(key, value, d->ctx->context);
+    set_value(key, value, d->ctx->userValues);
 }
 
 bool ICISettingsContext::hasFunction(const QString & name) const {

@@ -299,7 +299,6 @@ void ICISettings::setContext(const QVariantMap & context){
 }
 
 void ICISettings::setValue(const QString & key, const QVariant & value){
-    d->setValue(key, value);
     set_value(key, value, d->userValues);
 }
 
@@ -318,7 +317,7 @@ void expand_map(QStringList & keys, const QString & k, const QVariant & v){
             expand_map(keys, k.isEmpty() ? it.key() : k +"." + it.key(), it.value());
         }
     }
-    else if(!k.isEmpty()){
+    if(!k.isEmpty()){
         keys.append(k);
     }
 }
@@ -344,7 +343,7 @@ bool ICISettings::evaluate(bool clear, bool ignore_errors) {
     if(d->parseError)
         return false;
     if(clear) {
-        d->context = d->userValues;
+        d->context.clear();
     }
     d->evaluate(ignore_errors);
     return !d->error;
@@ -521,7 +520,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
     QStringList paths;
     if(QFileInfo(path).isDir()){
         Q_FOREACH(const QFileInfo & file, QDir(path).entryInfoList(QDir::NoDotAndDotDot|QDir::Files)){
-            qDebug() << file.absoluteFilePath();
+            //qDebug() << file.absoluteFilePath();
             paths << file.absoluteFilePath();
         }
     }
@@ -845,6 +844,8 @@ QVariant ICISettingsPrivate::value(const QStringList & keys, const QVariant & de
             return true;
     }
     QVariant value = ::value(keys, context, defaultValue);
+    if(value.isNull())
+        value = ::value(keys, userValues, defaultValue);
     return value;
 }
 
@@ -883,7 +884,6 @@ void ICISettingsContext::setValue(const QString & key, const QVariant & value){
 }
 
 void ICISettingsContext::setUserValue(const QString & key, const QVariant & value) {
-    set_value(key, value, d->ctx->context);
     set_value(key, value, d->ctx->userValues);
 }
 

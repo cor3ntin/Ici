@@ -298,7 +298,7 @@ void ICISettings::setContext(const QVariantMap & context){
     d->context = context;
 }
 
-void ICISettings::setValue(const QString & key, const QVariant & value){
+void ICISettings::setValue(const QString & key, const QVariant & value) {
     set_value(key, value, d->userValues);
 }
 
@@ -824,6 +824,8 @@ bool ICISettingsPrivate::hasKey(const QString & key) const{
 bool ICISettingsPrivate::hasKey(const QStringList & key) const {
     if (contains(key, context))
         return true;
+    if (contains(key, userValues))
+        return true;
     if(key.size() == 1) {
         if(key.at(0) == "PWD")
             return true;
@@ -843,7 +845,7 @@ QVariant ICISettingsPrivate::value(const QStringList & keys, const QVariant & de
         if(keys.at(0) == "__HAS_STRING_IDENTIFIER")
             return true;
     }
-    QVariant value = ::value(keys, context, defaultValue);
+    QVariant value = ::value(keys, context);
     if(value.isNull())
         value = ::value(keys, userValues, defaultValue);
     return value;

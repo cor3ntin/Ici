@@ -558,11 +558,13 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
         includedFiles.append(filepath);
         ICI::StatementListNode* firstIncludedNode = parser.ast()->nodes;
         ICI::StatementListNode* currentIncludedNode = firstIncludedNode;
-        while(currentIncludedNode && currentIncludedNode->next)
-            currentIncludedNode = currentIncludedNode->next;
-        currentIncludedNode->next = next_node;
-        next_node = firstIncludedNode;
-        node->executed = true;
+        if(currentIncludedNode) {
+            while(currentIncludedNode && currentIncludedNode->next)
+                currentIncludedNode = currentIncludedNode->next;
+            currentIncludedNode->next = next_node;
+            next_node = firstIncludedNode;
+            node->executed = true;
+        }
     }
     parent->next = next_node;
     return true;

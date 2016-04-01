@@ -193,10 +193,7 @@ template <typename NodeType> NodeType* finish(NodeType* node) {
 
 bool ishexnstring(const QString & string) {
     for (int i = 0; i < string.length(); i++) {
-        auto c = string[i];
-        if( (c < '0' || c > '9')
-         && (c < 'a' || c > 'f')
-         && (c < 'A' || c > 'F'))
+        if (isxdigit(string[i] == 0))
             return false;
     }
     return true;

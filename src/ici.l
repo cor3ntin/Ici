@@ -28,7 +28,6 @@
 #define YY_USER_ACTION m_pos += yyleng;
 
 
-static QByteArray stringbuffer;
 %}
 %x simple_string
 %x double_string

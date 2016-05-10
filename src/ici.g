@@ -125,6 +125,8 @@ protected:
     inline const QString* storeString(const QByteArray & string){
         return &*m_strings.insert(unescape(string));
     }
+    QByteArray stringbuffer;
+
     QString unescape( const QByteArray & ba);
 
     ICI::RootNode* m_ast;

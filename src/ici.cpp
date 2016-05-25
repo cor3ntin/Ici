@@ -27,6 +27,13 @@ static QVariantList nullVariantList;
 static QVariantMap  nullVariantMap;
 static QVariant  nullVariant;
 
+template <typename T>
+T detached(const T & t) {
+    T cpy = t;
+    cpy.detach();
+    return cpy;
+}
+
 static QVariantList & asList(QVariant & v) {
     if(v.type() != QVariant::List)
         return nullVariantList;
@@ -91,8 +98,9 @@ QVariant value(const QStringList & keys, const QVariantMap & context,
         if(it == map->constEnd())
             return defaultValue;
         const QVariant & value = *it;
-        if(i >= keys.size())
-            return value;
+        if(i >= keys.size()) {
+            return detached(value);
+        }
         if(value.type() == QVariant::Map)
             map = &asMap(value);
         else if(i == keys.size() -1 && value.type() == QVariant::List) {
@@ -102,7 +110,7 @@ QVariant value(const QStringList & keys, const QVariantMap & context,
             if(ok) {
                 const QVariantList & lst = asList(value);
                 if(idx < lst.size())
-                    return lst[idx];
+                    return detached(lst[idx]);
             }
         }
         else
@@ -159,11 +167,11 @@ bool contains(const QString & key, const QVariantMap & context){
     return contains(key.split('.'), context);
 }
 
-bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context){
+bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context) {
     if(keys.isEmpty())
         return true;
     QString key = keys.takeFirst();
-    if(keys.isEmpty()){
+    if(keys.isEmpty()) {
         context.insert(key, value);
     }
     else if(!context.contains(key) || context.value(key).type() != QVariant::Map){

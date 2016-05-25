@@ -173,8 +173,9 @@ bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context
     }
     else {
         QVariant & subcontextV = context[key];
-        if(!(subcontextV.type() == QVariant::Map)) return false;
-        QVariantMap & subcontext = asMap(subcontextV);
+        if(!(subcontextV.type() == QVariant::Map))
+            return false;
+        QVariantMap subcontext = subcontextV.toMap();
         if(!set_value(keys, value,  subcontext))
             return false;
     }

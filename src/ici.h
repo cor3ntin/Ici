@@ -13,8 +13,8 @@
 **
 ****************************************************************************/
 
-#ifndef _ICI_H
-#define _ICI_H
+#ifndef _ICI_H__
+#define _ICI_H__
 
 #include <QObject>
 #include <QVariantMap>
@@ -36,7 +36,8 @@ public:
     void setErrorMessage(const QString & message);
     QVariant value(const QString & key, const QVariant & defaultValue = QVariant()) const;
     bool exists(const QString & key) const;
-    void setValue(const QString & key, const QVariant & defaultValue);
+    void setValue(const QString & key, const QVariant & value);
+    void setUserValue(const QString & key, const QVariant & value);
     const QVariantList & args() const;
     const QStringList & keys() const;
     bool hasFunction(const QString & name) const;
@@ -45,6 +46,7 @@ public:
     //for python
     void* fdata() const;
 private:
+    friend QVariant eval_string(ICISettingsContext* ctx);
     friend class ICISettingsPrivate;
     ICISettingsContext();
     ICISettingsContextPrivate* d;

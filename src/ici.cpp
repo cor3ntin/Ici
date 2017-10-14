@@ -19,11 +19,20 @@
 #include "iciparser.h"
 #include "icifunctions.h"
 #include <QFile>
+#include <QDir>
+#include <QFileInfo>
 #include <QHash>
 
 static QVariantList nullVariantList;
 static QVariantMap  nullVariantMap;
 static QVariant  nullVariant;
+
+template <typename T>
+T detached(const T & t) {
+    T cpy = t;
+    cpy.detach();
+    return cpy;
+}
 
 static QVariantList & asList(QVariant & v) {
     if(v.type() != QVariant::List)
@@ -89,8 +98,9 @@ QVariant value(const QStringList & keys, const QVariantMap & context,
         if(it == map->constEnd())
             return defaultValue;
         const QVariant & value = *it;
-        if(i >= keys.size())
-            return value;
+        if(i >= keys.size()) {
+            return detached(value);
+        }
         if(value.type() == QVariant::Map)
             map = &asMap(value);
         else if(i == keys.size() -1 && value.type() == QVariant::List) {
@@ -100,7 +110,7 @@ QVariant value(const QStringList & keys, const QVariantMap & context,
             if(ok) {
                 const QVariantList & lst = asList(value);
                 if(idx < lst.size())
-                    return lst[idx];
+                    return detached(lst[idx]);
             }
         }
         else
@@ -157,11 +167,11 @@ bool contains(const QString & key, const QVariantMap & context){
     return contains(key.split('.'), context);
 }
 
-bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context){
+bool set_value(QStringList & keys, const QVariant & value, QVariantMap & context) {
     if(keys.isEmpty())
         return true;
     QString key = keys.takeFirst();
-    if(keys.isEmpty()){
+    if(keys.isEmpty()) {
         context.insert(key, value);
     }
     else if(!context.contains(key) || context.value(key).type() != QVariant::Map){
@@ -188,33 +198,56 @@ bool set_value(const QString & key, const QVariant & value, QVariantMap & contex
     return set_value(keys, value, context);
 }
 
-
-QString ICISettingsPrivate::replace_in_string(QString string, const QVariantMap & context){
+// replaces ${X} by the value of the key X
+// The function accept the format ${X}  or $${X} depending on the value of twoDollarSigns
+// the $${} is used by the eval_string function, allowing lazy string parsing
+QString ICISettingsPrivate::replace_in_string(QString string, bool twoDollarSigns) {
     bool escaped = false;
     int in = 0;
     int begin = 0;
+    int offset = (twoDollarSigns ? 3 : 2);
     for(int i = 0; i < string.size() && i>=0; i++) {
         QChar c = string.at(i);
         if (c == '\\') {
             escaped = !escaped ;
+            continue;
         }
-        else if (c == '$' && !escaped &&  i+1 < string.size() && string.at(i+1) == '{'){
+        else if(c == '$' && !escaped) {
+            if(i+2 >= string.size())
+                return string;
+            QChar next = string.at(i+1);
+            if(next == '$' && !escaped) {
+                if(twoDollarSigns)
+                    next = string.at(i+2);
+                else {
+                    i++; //skip 2 elems
+                    continue;
+                }
+            }
+            if(next != '{')
+                continue;
+
             if(in == 0)
                 begin = i;
             in++;
+            if(twoDollarSigns)
+                ++i;
+            continue;
         }
-        else if( c == '}' && !escaped && --in == 0){
-            QString substring = replace_in_string(string.mid(begin+2, (i-begin)-2), context);
+        else if( c == '}' && !escaped && --in == 0) {
+            QString substring = replace_in_string(string.mid(begin+offset, (i-begin)-offset), twoDollarSigns);
             QStringList keys = substring.split('.');
             if(this->hasKey(keys)) {
                 QVariant value = this->value(keys, QVariant());
-                if(value.canConvert<QString>()){
+                if(value.canConvert<QString>()) {
                     QString replacement = value.toString();
                     string.replace(begin, (i - begin)+1, replacement);
-                    i = (begin + replacement.size()) -2;
+                    i = (begin + replacement.size()) - 1;
                 }
             }
-            in = false;
+            else if(twoDollarSigns) {
+                i+=2;
+            }
         }
         else {
             escaped = false;
@@ -223,14 +256,14 @@ QString ICISettingsPrivate::replace_in_string(QString string, const QVariantMap 
     return string;
 }
 
-QStringList ICISettingsPrivate::identifier_keys(ICI::IdentifierNode* node, const QVariantMap & context) {
+QStringList ICISettingsPrivate::identifier_keys(ICI::IdentifierNode* node) {
     QStringList keys;
     ICI::IdentifierNode* n = node;
     while(n) {
         if(n->type == ICI::Node::Type_Identifier)
             keys << n->name;
         else
-            keys << replace_in_string(n->name, context);
+            keys << replace_in_string(n->name);
         n = n->next;
     }
     return keys;
@@ -273,8 +306,7 @@ void ICISettings::setContext(const QVariantMap & context){
     d->context = context;
 }
 
-void ICISettings::setValue(const QString & key, const QVariant & value){
-    d->setValue(key, value);
+void ICISettings::setValue(const QString & key, const QVariant & value) {
     set_value(key, value, d->userValues);
 }
 
@@ -293,7 +325,7 @@ void expand_map(QStringList & keys, const QString & k, const QVariant & v){
             expand_map(keys, k.isEmpty() ? it.key() : k +"." + it.key(), it.value());
         }
     }
-    else if(!k.isEmpty()){
+    if(!k.isEmpty()){
         keys.append(k);
     }
 }
@@ -315,9 +347,11 @@ bool ICISettings::createFunction(const QString & name, IciFunction funct, void *
     return true;
 }
 
-bool ICISettings::evaluate(bool clear, bool ignore_errors){
+bool ICISettings::evaluate(bool clear, bool ignore_errors) {
+    if(d->parseError)
+        return false;
     if(clear) {
-        d->context = d->userValues;
+        d->context.clear();
     }
     d->evaluate(ignore_errors);
     return !d->error;
@@ -329,7 +363,7 @@ bool ICISettings::reload() {
     QFile f(d->fileName);
     if(!f.exists())
         return true;
-    d->error = !f.open(QIODevice::ReadOnly);
+    d->parseError = d->error = !f.open(QIODevice::ReadOnly);
     if(d->error)
         d->errorString = f.errorString();
     QByteArray content = f.readAll();
@@ -342,8 +376,20 @@ QStringList ICISettings::files() const {
 }
 
 
+QVariant eval_string(ICISettingsContext* ctx) {
+    if(ctx->args().size() != 1 ) {
+        ctx->setErrorMessage("eval_string takes 1 argument");
+        return false;
+    }
+
+    QString string = ctx->args().at(0).toString();
+    QString result = ctx->d->ctx->replace_in_string(string, true);
+
+    return result;
+}
+
 ICISettingsPrivate::ICISettingsPrivate():
-    error(false), ast(0), currentNode(0){
+    parseError(false), error(false), ast(0), currentNode(0){
 
 
     functions.insert("equals", QPair<ICISettings::IciFunction, void*>(ICI::equals, 0));
@@ -373,6 +419,8 @@ ICISettingsPrivate::ICISettingsPrivate():
     functions.insert("extend",    QPair<ICISettings::IciFunction, void*>(ICI::extend, 0));
     functions.insert("has_function",  QPair<ICISettings::IciFunction, void*>(ICI::has_function, 0));
     functions.insert("join",   QPair<ICISettings::IciFunction, void*>(ICI::join, 0));
+
+    functions.insert("eval_string", QPair<ICISettings::IciFunction, void*>(eval_string, 0));
 }
 
 ICISettingsPrivate::~ICISettingsPrivate(){
@@ -386,9 +434,9 @@ void ICISettingsPrivate::parse(const QByteArray & data, const QString & fileName
 
     ICIParser parser(data, fileName);
 
-    error = false;
+    parseError = error = false;
     if(!parser.parse()){
-        error = true;
+        parseError = error = true;
         errorString = parser.errorString();
     }
     else{
@@ -427,6 +475,8 @@ bool ICISettingsPrivate::evaluate(ICI::StatementNode* node, ICI::StatementListNo
         }
         case ICI::Node::Type_IfStatement:
            return evaluate(static_cast<ICI::IfStatementNode*>(node));
+        case ICI::Node::Type_ForeachStatement:
+            return evaluate(static_cast<ICI::ForeachStatementNode*>(node));
         case ICI::Node::Type_Include:
            return evaluate(static_cast<ICI::IncludeStatementNode*>(node), parent);
         case ICI::Node::Type_FunctionCall:{
@@ -464,7 +514,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
     if(node->executed)
         return true;
     bool required = true;
-    QString path = replace_in_string(node->path, context);
+    QString path = replace_in_string(node->path);
     if(path.at(0) == '?') {
        required = false;
        path = path.mid(1);
@@ -478,7 +528,7 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
     QStringList paths;
     if(QFileInfo(path).isDir()){
         Q_FOREACH(const QFileInfo & file, QDir(path).entryInfoList(QDir::NoDotAndDotDot|QDir::Files)){
-            qDebug() << file.absoluteFilePath();
+            //qDebug() << file.absoluteFilePath();
             paths << file.absoluteFilePath();
         }
     }
@@ -516,11 +566,13 @@ bool ICISettingsPrivate::evaluate(ICI::IncludeStatementNode* node, ICI::Statemen
         includedFiles.append(filepath);
         ICI::StatementListNode* firstIncludedNode = parser.ast()->nodes;
         ICI::StatementListNode* currentIncludedNode = firstIncludedNode;
-        while(currentIncludedNode && currentIncludedNode->next)
-            currentIncludedNode = currentIncludedNode->next;
-        currentIncludedNode->next = next_node;
-        next_node = firstIncludedNode;
-        node->executed = true;
+        if(currentIncludedNode) {
+            while(currentIncludedNode && currentIncludedNode->next)
+                currentIncludedNode = currentIncludedNode->next;
+            currentIncludedNode->next = next_node;
+            next_node = firstIncludedNode;
+            node->executed = true;
+        }
     }
     parent->next = next_node;
     return true;
@@ -533,7 +585,7 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node, QVariant & out){
     QVariant value;
     if(!evaluate(node->value, value))
         return false;
-    QStringList keys = identifier_keys(node->id, this->context);
+    QStringList keys = identifier_keys(node->id);
     switch(node->op->op){
         case ICI::Node::AssignementOperator:
             set_value(keys, value, context);
@@ -591,7 +643,7 @@ bool ICISettingsPrivate::evaluate(ICI::AssignementNode* node, QVariant & out){
 
 bool ICISettingsPrivate::evaluate(ICI::UnsetStatementNode* node){
     currentNode = node;
-    unset(identifier_keys(node->identifier, context), context);
+    unset(identifier_keys(node->identifier), context);
     return true;
 }
 
@@ -608,11 +660,11 @@ bool ICISettingsPrivate::evaluate(ICI::ExpressionNode* node, QVariant & value){
            value = QVariant();
            return true;
        case ICI::Node::Type_StringLiteral:
-           value = replace_in_string(static_cast<ICI::StringLiteralNode*>(node)->value, context);
+           value = replace_in_string(static_cast<ICI::StringLiteralNode*>(node)->value);
            return true;
        case ICI::Node::Type_Identifier:
        case ICI::Node::Type_IdentifierString:
-           value = this->value(identifier_keys(static_cast<ICI::IdentifierNode*>(node), context), QVariant());
+           value = this->value(identifier_keys(static_cast<ICI::IdentifierNode*>(node)), QVariant());
            return true;
        case ICI::Node::Type_LogicalExpression: {
             bool istrue = false;
@@ -668,7 +720,7 @@ bool ICISettingsPrivate::evaluate(ICI::MapElementNode* elem, QVariantMap &values
            return false;
        QString key;
        if(elem->type == ICI::Node::Type_IdentifierString)
-           replace_in_string(elem->key->name, this->context);
+           replace_in_string(elem->key->name);
        else key = elem->key->name;
        set_value(key, value, values);
        elem = elem->next;
@@ -681,7 +733,7 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
     if(!node)
         return false;
     QHash<QString, QPair<ICISettings::IciFunction, void* > >::const_iterator it = functions.find(node->name);
-    if(it == functions.end()){
+    if(it == functions.end()) {
         errorString = formatError(QString("function %1 undefined").arg(node->name), node);
         if(ignore_errors)
             return true;
@@ -696,7 +748,7 @@ bool ICISettingsPrivate::evaluate(ICI::FunctionCallNode * node, QVariant & resul
     ICI::ListElementNode* elem = node->parameters;
     while(elem){
         if(elem->value->type == ICI::Node::Type_Identifier )
-            ctx.d->keys.append(identifier_keys(static_cast<ICI::IdentifierNode*>(elem->value), context).join("."));
+            ctx.d->keys.append(identifier_keys(static_cast<ICI::IdentifierNode*>(elem->value)).join("."));
         else
             ctx.d->keys.append(QString());
         elem = elem->next;
@@ -716,6 +768,28 @@ bool ICISettingsPrivate::evaluate(ICI::IfStatementNode* node){
         istrue = value.toBool();
     }
     return evaluate(istrue ? node->block : node->alternative_block);
+}
+
+bool ICISettingsPrivate::evaluate(ICI::ForeachStatementNode* node){
+    currentNode = node;
+    QVariant value;
+    if(!evaluate(node->lst, value))
+        return false;
+    if(value.isNull())
+        return true;
+    if(!value.canConvert(QVariant::List)) {
+        errorString = formatError("foreach : expression is not a list", node);
+        return false;
+    }
+    QVariantList list = value.toList();
+    QVariant cached_var = this->value(node->var, QVariant());
+    Q_FOREACH(const QVariant & v, list) {
+        setValue(node->var, v);
+        if(!evaluate(node->block))
+            return false;
+    }
+    setValue(node->var, cached_var);
+    return true;
 }
 
 bool ICISettingsPrivate::evaluate(ICI::LogicalExpressionNode* node, bool & istrue) {
@@ -760,6 +834,8 @@ bool ICISettingsPrivate::hasKey(const QString & key) const{
 bool ICISettingsPrivate::hasKey(const QStringList & key) const {
     if (contains(key, context))
         return true;
+    if (contains(key, userValues))
+        return true;
     if(key.size() == 1) {
         if(key.at(0) == "PWD")
             return true;
@@ -779,7 +855,9 @@ QVariant ICISettingsPrivate::value(const QStringList & keys, const QVariant & de
         if(keys.at(0) == "__HAS_STRING_IDENTIFIER")
             return true;
     }
-    QVariant value = ::value(keys, context, defaultValue);
+    QVariant value = ::value(keys, context);
+    if(value.isNull())
+        value = ::value(keys, userValues, defaultValue);
     return value;
 }
 
@@ -813,8 +891,12 @@ bool ICISettingsContext::exists(const QString & key) const{
     return d->ctx->hasKey(key);
 }
 
-void ICISettingsContext::setValue(const QString & key, const QVariant & defaultValue){
-    set_value(key, defaultValue, d->ctx->context);
+void ICISettingsContext::setValue(const QString & key, const QVariant & value){
+    set_value(key, value, d->ctx->context);
+}
+
+void ICISettingsContext::setUserValue(const QString & key, const QVariant & value) {
+    set_value(key, value, d->ctx->userValues);
 }
 
 bool ICISettingsContext::hasFunction(const QString & name) const {

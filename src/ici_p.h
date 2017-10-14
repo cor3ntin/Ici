@@ -37,6 +37,7 @@ public:
     ~ICISettingsPrivate();
     void parse(const  QByteArray & data,const QString & fileName = QString());
 
+    bool parseError;
     bool error;
     bool ignore_errors;
     QString fileName;
@@ -62,10 +63,11 @@ public:
     bool evaluate(ICI::UnsetStatementNode*);
     bool evaluate(ICI::FunctionCallNode*,QVariant &);
     bool evaluate(ICI::IfStatementNode*);
+    bool evaluate(ICI::ForeachStatementNode*);
     bool evaluate(ICI::LogicalExpressionNode*,bool & istrue);
 
-    QString replace_in_string(QString string, const QVariantMap & context);
-    QStringList identifier_keys(ICI::IdentifierNode* node, const QVariantMap & context);
+    QString replace_in_string(QString string, bool twoDollarsSigns = false);
+    QStringList identifier_keys(ICI::IdentifierNode* node);
     bool hasKey(const QString & key) const;
     bool hasKey(const QStringList & key) const;
     QVariant value(const QString & key, const QVariant & defaultValue) const;

@@ -45,6 +45,7 @@
 %token ELSE
 %token INCLUDE
 %token UNSET
+%token FOREACH
 
 %start Source
 
@@ -67,7 +68,12 @@
 #ifndef _ICIPARSER_H_
 #define _ICIPARSER_H_
 
-#include <QtCore>
+#include <ctype.h>
+#include <QString>
+#include <QByteArray>
+#include <QVarLengthArray>
+#include <QSet>
+#include <QDebug>
 #include "icigrammar_p.h"
 #include "iciast_fwd.h"
 
@@ -119,6 +125,8 @@ protected:
     inline const QString* storeString(const QByteArray & string){
         return &*m_strings.insert(unescape(string));
     }
+    QByteArray stringbuffer;
+
     QString unescape( const QByteArray & ba);
 
     ICI::RootNode* m_ast;
@@ -167,6 +175,23 @@ protected:
 #include "iciast.h"
 
 #define ICI_UP_LOC(node, start, end) node->file = m_fileName; node->line = start.line; node->pos = start.pos;
+
+
+
+namespace ICI {
+template <typename NodeType, typename... Args>
+NodeType* makeAstNode(Args&&...args){
+    return new NodeType(std::forward<Args>(args)...);
+}
+
+template <typename NodeType> NodeType* finish(NodeType* node) {
+    if(!node)
+        return 0;
+    NodeType* front = node->next;
+    node->next = 0;
+    return front;
+}
+}
 
 bool ishexnstring(const QString & string) {
     for (int i = 0; i < string.length(); i++) {
@@ -303,7 +328,7 @@ bool ICIParser::parse()
 
       else if (act > 0)
         {
-          if (++m_tos == m_stack_size)
+          if (++m_tos == m_stack_size-1)
             reallocateStack();
 
           m_stack [m_tos].value.dval = yytoken; // ### save the token value here
@@ -386,6 +411,7 @@ sym(1).Node = ICI::makeAstNode<ICI::MapStatementNode>(sym(1).Map);
 ./
 
 Statement: IfStatement ;
+Statement: ForeachStatement ;
 Statement: IncludeStatement;
 Statement: UnsetStatement;
 
@@ -428,6 +454,15 @@ IfStatement: IF RExpression StatementBlock ;
 /.
 case $rule_number: {
     sym(1).Node = ICI::makeAstNode<ICI::IfStatementNode> (sym(2).Expression, sym(3).StatementList);
+    ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
+    break;
+}
+./
+
+ForeachStatement : FOREACH StoredIdentifier COLON RExpression StatementBlock ;
+/.
+case $rule_number: {
+    sym(1).Node = ICI::makeAstNode<ICI::ForeachStatementNode> (*(sym(2).str), sym(4).Expression, sym(5).StatementList);
     ICI_UP_LOC(sym(1).Node, loc(1), loc(3))
     break;
 }

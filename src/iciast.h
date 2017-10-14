@@ -31,6 +31,7 @@ struct Node
         Type_Statements,
         Type_Statement,
         Type_IfStatement,
+        Type_ForeachStatement,
         Type_Include,
         Type_Unset,
 
@@ -248,15 +249,14 @@ struct ListElementNode : public Node {
     }
 
     ListElementNode(ExpressionNode* value){
-        if(this->next != this)
-            this->next  = this;
-
+        this->next  = this;
         this->value = value;
         type = Type_List;
     }
 
-    virtual ~ListElementNode(){
-        delete next;
+    virtual ~ListElementNode() {
+        if(this->next != this)
+            delete next;
         delete value;
     }
 
@@ -386,6 +386,20 @@ struct IfStatementNode : public StatementNode {
     StatementListNode* alternative_block;
 };
 
+struct ForeachStatementNode : public StatementNode {
+    ForeachStatementNode(const QString & var, ExpressionNode* lst, StatementListNode* block)
+        :var(var), lst(lst), block(block) {
+         type = Type_ForeachStatement;
+    }
+    virtual ~ForeachStatementNode(){
+        delete lst;
+        delete block;
+    }
+    QString var;
+    ExpressionNode* lst;
+    StatementListNode* block;
+};
+
 struct RootNode : public Node {
 
     RootNode(StatementListNode* nodes):
@@ -401,26 +415,6 @@ struct RootNode : public Node {
 };
 
 
-template <typename NodeType> NodeType* makeAstNode(){
-    return new NodeType();
-}
-template <typename NodeType, typename Arg1> NodeType* makeAstNode(Arg1 arg1){
-    return new NodeType(arg1);
-}
-template <typename NodeType, typename Arg1, typename Arg2> NodeType* makeAstNode(Arg1 arg1, Arg2 arg2){
-    return new NodeType(arg1, arg2);
-}
-template <typename NodeType, typename Arg1,typename Arg2, typename Arg3> NodeType* makeAstNode(Arg1 arg1, Arg2 arg2, Arg3 arg3){
-    return new NodeType(arg1, arg2, arg3);
-}
-
-template <typename NodeType> NodeType* finish(NodeType* node){
-    if(!node)
-        return 0;
-    NodeType* front = node->next;
-    node->next = 0;
-    return front;
-}
 }
 
 #endif // CONFIGURATIONPARSERAST_H
